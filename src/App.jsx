@@ -261,7 +261,7 @@ export default function App() {
       <header className="dashboard-header">
         <div className="dashboard-brand">
           <span className="dashboard-logo">FIKR</span>
-          <h1 className="dashboard-title">Zakat Dashboard</h1>
+          <h1 className="dashboard-title">Zakat Calculator</h1>
         </div>
         <div className="dashboard-meta">
           <div className="prices-pill">
