@@ -72,7 +72,7 @@ export function cardsToForm(assetCards, liabilityCards, nisabStandard, goldPrice
     .filter((c) => c.type === 'retirement')
     .flatMap((c) => getEntries(c))
   const firstRetirement = retirementEntries[0] || {}
-  const retirementMethod = firstRetirement.method ?? 'method1'
+  const retirementMethod = (firstRetirement.method === 'method1' ? 'withdraw' : firstRetirement.method) ?? 'full'
   const retirementBalance = retirementEntries.reduce((s, e) => s + (Number(e.balance) || 0), 0)
   const retirementFundsList = retirementEntries.flatMap((e) =>
     (e.funds || []).map((f) => ({

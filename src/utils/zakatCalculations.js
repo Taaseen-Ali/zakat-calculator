@@ -143,7 +143,8 @@ function buildAssetBreakdownDetailed(form, totals) {
   }
 
   if (totals.retirement > 0) {
-    if (retirementMethod === 'method1') {
+    const method = retirementMethod === 'method1' ? 'withdraw' : retirementMethod
+    if (method === 'withdraw') {
       const bal = Number(retirementBalance) || 0
       const penalty = bal * EARLY_WITHDRAWAL_PENALTY
       const tax = estimateTaxOnWithdrawal(bal, useTaxableIncome ? (Number(taxableIncome) || 0) : (Number(grossIncome) || 0), filingStatus, stateTaxRate, useTaxableIncome)
@@ -161,6 +162,18 @@ function buildAssetBreakdownDetailed(form, totals) {
             { desc: `− estimated tax on withdrawal`, value: -tax },
             { desc: `= Zakatable amount`, value: net }
           ]
+        }]
+      })
+    } else if (method === 'full') {
+      const bal = Number(retirementBalance) || 0
+      sections.push({
+        type: 'retirement',
+        label: '401(k) / IRA',
+        value: totals.retirement,
+        entries: [{
+          label: 'Full balance (zakat on 100%)',
+          value: bal,
+          steps: [{ desc: `Balance`, value: bal }]
         }]
       })
     } else {
@@ -294,16 +307,22 @@ export function calculateZakat(form) {
   const stocksLong = (stocksLongTermList || []).reduce((s, t) => s + (Number(t.marketValue) || 0) * (t.zakatableFraction !== undefined ? t.zakatableFraction : 0.30), 0)
 
   let retirement = 0
-  if (retirementMethod === 'method1') {
+  const retirementBal = Number(retirementBalance) || 0
+  const method = retirementMethod === 'method1' ? 'withdraw' : retirementMethod
+  if (method === 'withdraw') {
+    // Must withdraw from 401k to pay zakat — deduct penalty & tax from amount when calculating
     retirement = netAfterPenaltyAndTax(
-      Number(retirementBalance) || 0,
+      retirementBal,
       useTaxableIncome ? (Number(taxableIncome) || 0) : (Number(grossIncome) || 0),
       filingStatus,
       stateTaxRate,
       useTaxableIncome
     )
-  } else {
+  } else if (method === 'method2') {
     retirement = (retirementFundsList || []).reduce((s, f) => s + (Number(f.balance) || 0) * (f.zakatableFraction !== undefined ? f.zakatableFraction : 0.30), 0)
+  } else {
+    // Full balance (default) — zakat on 100% when you have other assets to pay
+    retirement = retirementBal
   }
 
   const realEstate = (realEstateFlippingList || []).reduce((s, p) => s + (Number(p.marketValue) || 0), 0)

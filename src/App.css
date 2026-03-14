@@ -83,17 +83,6 @@
   color: rgba(255, 255, 255, 0.95);
 }
 
-.nisab-selector .info-tooltip-trigger {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.nisab-selector .info-tooltip-trigger:hover {
-  background: rgba(255, 255, 255, 0.25);
-  color: var(--fikr-gold-light);
-}
-
 .nisab-selector-desc {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.75);
@@ -112,7 +101,7 @@
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -121,11 +110,11 @@
 
 .nisab-selector .nisab-pill button:hover {
   color: white;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .nisab-selector .nisab-pill button.active {
-  background: rgba(201, 162, 39, 0.35);
+  background: rgba(201, 162, 39, 0.4);
   color: var(--fikr-gold-light);
 }
 
@@ -179,7 +168,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .result-amount {
@@ -194,7 +183,7 @@
   gap: 12px;
   margin-top: 8px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .btn-pdf {
@@ -218,7 +207,7 @@
 .result-calculation {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 .result-calculation-toggle {
@@ -243,6 +232,9 @@
 .result-calculation-chevron {
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  flex-shrink: 0;
   transition: transform 0.2s;
 }
 
@@ -253,8 +245,9 @@
 .result-calculation-body {
   margin-top: 16px;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.22);
   border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .calc-section {
@@ -270,7 +263,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 8px;
 }
 
@@ -283,11 +276,11 @@
 }
 
 .calc-step:not(:last-child) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .calc-step-label {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .calc-step-value {
@@ -306,7 +299,7 @@
 .calc-step-result {
   margin-top: 4px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
   font-size: 15px;
 }
 
@@ -336,7 +329,7 @@
 .calc-step-entry .calc-step-label {
   padding-left: 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .calc-section-sub > .calc-step-entry {
@@ -360,7 +353,7 @@
 .calc-step-total {
   margin-top: 4px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
   font-weight: 600;
 }
 
@@ -728,12 +721,12 @@
 
 .tab-btn:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tab-btn.active {
-  color: var(--fikr-gold);
-  background: rgba(45, 107, 82, 0.25);
+  color: var(--fikr-gold-light);
+  background: rgba(45, 107, 82, 0.35);
 }
 
 .tab-icon {
@@ -837,9 +830,17 @@
 .card-chevron {
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   color: var(--text-muted);
   flex-shrink: 0;
   transition: transform 0.2s;
+}
+
+.card-chevron svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .card-expanded .card-chevron {
@@ -852,40 +853,127 @@
   gap: 4px;
 }
 
-/* Info tooltip */
-.info-tooltip-wrap {
-  position: relative;
+/* Section help — visible by default, dismissible */
+.section-help {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: rgba(45, 107, 82, 0.12);
+  border-left: 3px solid var(--fikr-accent);
+  border-radius: var(--radius-sm);
 }
 
-.info-tooltip-trigger {
-  width: 20px;
-  height: 20px;
-  display: flex;
+.section-help-text {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.section-help-hide {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.section-help-hide:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.section-help--compact {
+  margin: 6px 0 8px 0;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+.section-help--compact .section-help-hide {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+/* Section help inside result card (dark green bg) */
+.dashboard-result .section-help {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  border-left-color: var(--fikr-gold-light);
+}
+
+.dashboard-result .section-help-hide {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.dashboard-result .section-help-hide:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.section-help-show {
+  margin: 0 0 10px 0;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fikr-accent);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+
+.section-help-show:hover {
+  color: var(--fikr-gold);
+}
+
+.dashboard-result .section-help-show {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dashboard-result .section-help-show:hover {
+  color: var(--fikr-gold-light);
+}
+
+/* Info tooltip (nisab) */
+.nisab-selector .info-tooltip-trigger {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   cursor: help;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, background 0.2s;
 }
 
-.info-tooltip-trigger:hover {
-  color: var(--fikr-gold);
-  border-color: var(--fikr-accent);
+.nisab-selector .info-tooltip-trigger:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--fikr-gold-light);
 }
 
 .info-tooltip-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 10;
+  position: fixed;
+  z-index: 9999;
   min-width: 220px;
-  max-width: 320px;
-  padding: 12px 14px;
+  max-width: 280px;
+  padding: 10px 12px;
   font-size: 12px;
   line-height: 1.5;
   color: var(--text);
@@ -893,19 +981,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-}
-
-.info-tooltip-popover::before {
-  content: '';
-  position: absolute;
-  top: -6px;
-  right: 12px;
-  width: 10px;
-  height: 10px;
-  background: var(--bg-elevated);
-  border-left: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-  transform: rotate(45deg);
 }
 
 .card-remove {
@@ -943,7 +1018,7 @@
 
 .card-field label {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
@@ -1185,8 +1260,16 @@
   justify-content: center;
   width: 24px;
   height: 24px;
+  min-width: 24px;
+  min-height: 24px;
   color: var(--text-muted);
   transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.card-entry-chevron svg {
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 
@@ -1253,18 +1336,18 @@
 
 .card-pill button:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .card-pill button.active {
-  background: rgba(201, 162, 39, 0.25);
-  color: var(--fikr-gold);
+  background: rgba(201, 162, 39, 0.35);
+  color: var(--fikr-gold-light);
 }
 
 .card-sub {
   padding: 10px 12px;
   background: var(--bg-card-solid);
-  border: 1px solid rgba(45, 107, 82, 0.35);
+  border: 1px solid rgba(45, 107, 82, 0.5);
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
@@ -1311,6 +1394,16 @@
   margin: 0;
 }
 
+.dashboard-footer a {
+  color: var(--fikr-accent);
+  text-decoration: none;
+}
+
+.dashboard-footer a:hover {
+  color: var(--fikr-gold);
+  text-decoration: underline;
+}
+
 /* Sticky compact Zakat due bar (shown when main result scrolls out of view) */
 .zakat-sticky-bar {
   position: fixed;
@@ -1344,7 +1437,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .zakat-sticky-bar-amount {
@@ -1352,4 +1445,93 @@
   font-weight: 700;
   color: white;
   letter-spacing: -0.02em;
+}
+
+/* Form layout — collapsible sections matching zakat-calculator-henna */
+.form-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.form-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-elevated);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.form-section-header:hover {
+  background: rgba(45, 107, 82, 0.08);
+}
+
+.form-section-title {
+  flex: 1;
+}
+
+.form-section-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.form-section-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.form-section-chevron.open {
+  transform: rotate(180deg);
+}
+
+.form-section-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-subsection-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.form-subsubsection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-subsubsection-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
 }
