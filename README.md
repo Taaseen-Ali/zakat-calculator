@@ -26,6 +26,16 @@ npm run build
 npm run preview
 ```
 
+## GitHub Pages
+
+The app is configured for GitHub Pages. After pushing to `main`:
+
+1. Go to **Settings → Pages** in the repo
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**
+3. The workflow will build and deploy on each push to `main`
+
+Live site: **https://taaseen-ali.github.io/zakat-calculator/**
+
 ## Tech
 
 - React 18 + Vite
