@@ -1,0 +1,75 @@
+:root {
+  /* FIKR + tech: deep green, gold, dark base */
+  --fikr-deep: #0a1f1a;
+  --fikr-forest: #0f2d26;
+  --fikr-mid: #1a4a3c;
+  --fikr-accent: #2d6b52;
+  --fikr-gold: #c9a227;
+  --fikr-gold-light: #e5c84a;
+  --fikr-glow: rgba(201, 162, 39, 0.15);
+  --bg-base: #0f1412;
+  --bg-elevated: #161d19;
+  --bg-card: rgba(22, 29, 25, 0.8);
+  --bg-card-solid: #1a2320;
+  --border: rgba(45, 107, 82, 0.25);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --text: #e8ebe9;
+  --text-muted: #8a9a94;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 40px rgba(45, 107, 82, 0.15);
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 107, 82, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(201, 162, 39, 0.06), transparent);
+  color: var(--text);
+  line-height: 1.5;
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+}
+
+#root {
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+}
+
+input, select, button, textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
