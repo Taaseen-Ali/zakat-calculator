@@ -1,11 +1,11 @@
 /**
  * Zakat calculation logic — Hanafi school, Fiqh Council of North America / SeekersGuidance.
- * Nisab: gold 85g or silver 595g. Rate: 2.5%.
+ * Nisab: gold 87.48g or silver 612.36g. Rate: 2.5%.
  */
 
 const ZAKAT_RATE = 0.025
-const NISAB_GOLD_GRAMS = 85
-const NISAB_SILVER_GRAMS = 595
+const NISAB_GOLD_GRAMS = 87.48
+const NISAB_SILVER_GRAMS = 612.36
 const EARLY_WITHDRAWAL_PENALTY = 0.10
 
 // 2024 Federal tax brackets (single) — taxable income thresholds and rates

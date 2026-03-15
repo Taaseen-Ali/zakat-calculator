@@ -13,8 +13,8 @@
   --bg-card-solid: #1e2824;
   --border: rgba(45, 107, 82, 0.4);
   --border-subtle: rgba(255, 255, 255, 0.1);
-  --text: #f0f3f2;
-  --text-muted: #a8b5b0;
+  --text: #f5f8f6;
+  --text-muted: #b8c6c0;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -40,6 +40,8 @@ html {
 body {
   margin: 0;
   font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
   background: var(--bg-base);
   background-image:
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 107, 82, 0.15), transparent),

@@ -4,7 +4,7 @@ A modern Zakat calculator branded for [FIKR](https://fikr.us/) (Foundation for I
 
 ## Features
 
-- **Nisab**: Gold (85g) or Silver (595g) standard
+- **Nisab**: Gold (87.48g) or Silver (612.36g) standard
 - **Personal assets**: Precious metals (with live gold/silver price import), cash, cryptocurrency, short-term and long-term stocks, 401(k)/IRA (Method 1: withdrawal − penalty − taxes; Method 2: per-fund zakatable %)
 - **Real estate & business**: Flipping properties, rental account balances, business assets (cash + inventory + receivables − liabilities), money lent (strong debt)
 - **Deductions**: Credit cards, mortgage next principal, personal loans, unpaid taxes, unpaid zakat, other liabilities

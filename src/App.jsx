@@ -76,7 +76,7 @@ function InputRow({ label, prefix, value, onChange, placeholder, type = 'number'
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          {...(isNum && { min: 0, step: prefix ? 0.01 : 'any' })}
+          {...(isNum && { min: 0, step: prefix ? 0.01 : 'any', inputMode: prefix ? 'decimal' : 'numeric' })}
         />
       </div>
     </div>
@@ -202,12 +202,20 @@ export default function App() {
   const form = formDataToForm(formData, nisabStandard, goldPrice, silverPrice, STATE_TAX_RATES[formData.stateName] ?? 0)
   const result = calculateZakat(form)
 
-  const updateForm = (updates) => setFormData((prev) => ({ ...prev, ...updates }))
-  const updateList = (key, updater) => setFormData((prev) => ({ ...prev, [key]: updater(prev[key] || []) }))
 
   const [showCalculation, setShowCalculation] = useState(false)
   const [showStickyBar, setShowStickyBar] = useState(false)
+  const [zakatCalculated, setZakatCalculated] = useState(false)
   const resultRef = useRef(null)
+
+  const updateFormWithReset = (updates) => {
+    setZakatCalculated(false)
+    setFormData((prev) => ({ ...prev, ...updates }))
+  }
+  const updateListWithReset = (key, updater) => {
+    setZakatCalculated(false)
+    setFormData((prev) => ({ ...prev, [key]: updater(prev[key] || []) }))
+  }
 
   useEffect(() => {
     const el = resultRef.current
@@ -225,43 +233,76 @@ export default function App() {
     return () => observer.disconnect()
   }, [])
 
-  const addCrypto = () => updateList('cryptoList', (list) => [...list, { id: uid(), name: '', coinId: '', amount: '', price: '', value: '', isTrading: true, entryLabel: `Crypto ${(list?.length || 0) + 1}` }])
-  const updateCrypto = (index, data) => updateList('cryptoList', (list) => list.map((c, i) => (i === index ? { ...c, ...data } : c)))
-  const removeCrypto = (index) => updateList('cryptoList', (list) => list.filter((_, i) => i !== index))
+  const addCrypto = () => updateListWithReset('cryptoList', (list) => [...list, { id: uid(), name: '', coinId: '', amount: '', price: '', value: '', isTrading: true, entryLabel: '' }])
+  const updateCrypto = (index, data) => updateListWithReset('cryptoList', (list) => list.map((c, i) => (i === index ? { ...c, ...data } : c)))
+  const removeCrypto = (index) => updateListWithReset('cryptoList', (list) => list.filter((_, i) => i !== index))
 
-  const addStocksLong = () => updateList('stocksLongTermList', (list) => [...list, { id: uid(), ticker: '', shares: '', pricePerShare: '', value: '', zakatableFraction: 0.3, stocksInputMode: 'per_share', entryLabel: '' }])
-  const updateStocksLong = (index, data) => updateList('stocksLongTermList', (list) => list.map((t, i) => (i === index ? { ...t, ...data } : t)))
-  const removeStocksLong = (index) => updateList('stocksLongTermList', (list) => list.filter((_, i) => i !== index))
+  const addStocksLong = () => updateListWithReset('stocksLongTermList', (list) => [...list, { id: uid(), ticker: '', shares: '', pricePerShare: '', value: '', zakatableFraction: 0.3, stocksInputMode: 'per_share', entryLabel: '' }])
+  const updateStocksLong = (index, data) => updateListWithReset('stocksLongTermList', (list) => list.map((t, i) => (i === index ? { ...t, ...data } : t)))
+  const removeStocksLong = (index) => updateListWithReset('stocksLongTermList', (list) => list.filter((_, i) => i !== index))
 
-  const addRealEstate = () => updateList('realEstateFlippingList', (list) => [...list, { id: uid(), name: '', marketValue: '', entryLabel: `Property ${(list?.length || 0) + 1}` }])
-  const updateRealEstate = (index, data) => updateList('realEstateFlippingList', (list) => list.map((p, i) => (i === index ? { ...p, ...data } : p)))
-  const removeRealEstate = (index) => updateList('realEstateFlippingList', (list) => list.filter((_, i) => i !== index))
+  const addRealEstate = () => updateListWithReset('realEstateFlippingList', (list) => [...list, { id: uid(), name: '', marketValue: '', entryLabel: `Property ${(list?.length || 0) + 1}` }])
+  const updateRealEstate = (index, data) => updateListWithReset('realEstateFlippingList', (list) => list.map((p, i) => (i === index ? { ...p, ...data } : p)))
+  const removeRealEstate = (index) => updateListWithReset('realEstateFlippingList', (list) => list.filter((_, i) => i !== index))
 
-  const addRental = () => updateList('rentalList', (list) => [...list, { id: uid(), name: '', balance: '', entryLabel: `Rental ${(list?.length || 0) + 1}` }])
-  const updateRental = (index, data) => updateList('rentalList', (list) => list.map((r, i) => (i === index ? { ...r, ...data } : r)))
-  const removeRental = (index) => updateList('rentalList', (list) => list.filter((_, i) => i !== index))
+  const addRental = () => updateListWithReset('rentalList', (list) => [...list, { id: uid(), name: '', balance: '', entryLabel: `Rental ${(list?.length || 0) + 1}` }])
+  const updateRental = (index, data) => updateListWithReset('rentalList', (list) => list.map((r, i) => (i === index ? { ...r, ...data } : r)))
+  const removeRental = (index) => updateListWithReset('rentalList', (list) => list.filter((_, i) => i !== index))
 
-  const addLoan = () => updateList('loansList', (list) => [...list, { id: uid(), description: '', amount: '', strong: true, entryLabel: `Loan ${(list?.length || 0) + 1}` }])
-  const updateLoan = (index, data) => updateList('loansList', (list) => list.map((l, i) => (i === index ? { ...l, ...data } : l)))
-  const removeLoan = (index) => updateList('loansList', (list) => list.filter((_, i) => i !== index))
+  const addLoan = () => updateListWithReset('loansList', (list) => [...list, { id: uid(), description: '', amount: '', strong: true, entryLabel: `Loan ${(list?.length || 0) + 1}` }])
+  const updateLoan = (index, data) => updateListWithReset('loansList', (list) => list.map((l, i) => (i === index ? { ...l, ...data } : l)))
+  const removeLoan = (index) => updateListWithReset('loansList', (list) => list.filter((_, i) => i !== index))
 
-  const addRetirementFund = () => updateList('retirementFundsList', (list) => [...list, { id: uid(), ticker: '', balance: '', zakatableFraction: 0.3, entryLabel: `Fund ${(list?.length || 0) + 1}` }])
-  const updateRetirementFund = (index, data) => updateList('retirementFundsList', (list) => list.map((f, i) => (i === index ? { ...f, ...data } : f)))
-  const removeRetirementFund = (index) => updateList('retirementFundsList', (list) => list.filter((_, i) => i !== index))
+  const addRetirementFund = () => updateListWithReset('retirementFundsList', (list) => [...list, { id: uid(), ticker: '', balance: '', zakatableFraction: 0.3, entryLabel: `Fund ${(list?.length || 0) + 1}` }])
+  const updateRetirementFund = (index, data) => updateListWithReset('retirementFundsList', (list) => list.map((f, i) => (i === index ? { ...f, ...data } : f)))
+  const removeRetirementFund = (index) => updateListWithReset('retirementFundsList', (list) => list.filter((_, i) => i !== index))
 
   return (
     <div className="dashboard">
       <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'}`} aria-hidden={!showStickyBar}>
         <div className="zakat-sticky-bar-content">
-          <span className="zakat-sticky-bar-label">Zakat due</span>
-          <span className="zakat-sticky-bar-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <div className="zakat-sticky-bar-left">
+            <div className="zakat-sticky-bar-row">
+              <span className="zakat-sticky-bar-label">Assets</span>
+              <span className="zakat-sticky-bar-amount">${result.totalZakatableAssets.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+            </div>
+            <div className="zakat-sticky-bar-row">
+              <span className="zakat-sticky-bar-label">Liabilities</span>
+              <span className="zakat-sticky-bar-amount">${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+            </div>
+          </div>
+          <div className="zakat-sticky-bar-right">
+            <span className="zakat-sticky-bar-label">Zakat due</span>
+            {zakatCalculated ? (
+              <>
+                <span className="zakat-sticky-bar-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <button
+                  type="button"
+                  className="zakat-sticky-bar-see-calc"
+                  onClick={() => {
+                    resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    setShowCalculation(true)
+                  }}
+                >
+                  See calculation
+                </button>
+              </>
+            ) : (
+              <button type="button" className="zakat-sticky-bar-calc" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
+            )}
+          </div>
         </div>
       </div>
 
       <header className="dashboard-header">
         <div className="dashboard-brand">
-          <span className="dashboard-logo">FIKR</span>
-          <h1 className="dashboard-title">Zakat Calculator</h1>
+          <a href="https://fikr.us" target="_blank" rel="noopener noreferrer" className="header-logo-link" aria-label="FIKR">
+            <img src={`${import.meta.env.BASE_URL}fikr-logo.png`} alt="FIKR" className="header-logo" />
+          </a>
+          <div className="dashboard-brand-text">
+            <span className="dashboard-logo">FIKR</span>
+            <h1 className="dashboard-title">Zakat Calculator</h1>
+          </div>
         </div>
         <div className="dashboard-meta">
           <div className="prices-pill">
@@ -276,17 +317,20 @@ export default function App() {
         <div className="result-top">
           <div className="result-main">
             <span className="result-label">Zakat due</span>
-            <span className="result-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            {zakatCalculated ? (
+              <span className="result-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            ) : (
+              <button type="button" className="result-calc-link" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
+            )}
           </div>
           <div className="nisab-selector">
             <div className="nisab-selector-header">
               <span className="nisab-selector-label">Nisab threshold</span>
-              <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (85g) or silver (595g)." />
+              <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g)." />
             </div>
-            <p className="nisab-selector-desc">Minimum wealth for zakat to be due</p>
             <div className="nisab-pill">
-              <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => setNisabStandard('gold')}>Gold 85g</button>
-              <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => setNisabStandard('silver')}>Silver 595g</button>
+              <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('gold'); }}>Gold 87.48g</button>
+              <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('silver'); }}>Silver 612.36g</button>
             </div>
           </div>
         </div>
@@ -295,7 +339,10 @@ export default function App() {
           <span>− Liabilities ${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
           <span>Nisab ${result.nisab.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
         </div>
-        <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result)}>Download PDF</button>
+        {zakatCalculated && (
+          <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result)}>Download PDF</button>
+        )}
+        {zakatCalculated && (
         <div className="result-calculation">
           <button
             type="button"
@@ -380,6 +427,7 @@ export default function App() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       <div className="form-layout">
@@ -390,7 +438,7 @@ export default function App() {
             </div>
             <SectionHelp text="We multiply how much you have (in grams) by today's price to get the value. All of it counts toward zakat. Use the ↻ button to refresh prices." />
             <div className="card-row">
-              <InputRow label="Gold owned (grams)" value={formData.goldGrams} onChange={(v) => updateForm({ goldGrams: v })} placeholder="e.g. 50" />
+              <InputRow label="Gold owned (grams)" value={formData.goldGrams} onChange={(v) => updateFormWithReset({ goldGrams: v })} placeholder="e.g. 50" />
               <div className="card-field">
                 <label>Gold price / gram</label>
                 <div className="input-wrap">
@@ -400,7 +448,7 @@ export default function App() {
               </div>
             </div>
             <div className="card-row">
-              <InputRow label="Silver owned (grams)" value={formData.silverGrams} onChange={(v) => updateForm({ silverGrams: v })} placeholder="e.g. 200" />
+              <InputRow label="Silver owned (grams)" value={formData.silverGrams} onChange={(v) => updateFormWithReset({ silverGrams: v })} placeholder="e.g. 200" />
               <div className="card-field">
                 <label>Silver price / gram</label>
                 <div className="input-wrap">
@@ -416,7 +464,7 @@ export default function App() {
               <span>Cash & Savings</span>
             </div>
             <SectionHelp text="Add up everything in your bank: checking, savings, and cash at home. We take 2.5% of that total." />
-            <InputRow label="Cash and bank savings" prefix="$" value={formData.cashAndSavings} onChange={(v) => updateForm({ cashAndSavings: v })} placeholder="e.g. 10000" />
+            <InputRow label="Cash and bank savings" prefix="$" value={formData.cashAndSavings} onChange={(v) => updateFormWithReset({ cashAndSavings: v })} placeholder="e.g. 10000" />
           </div>
 
           <div className="form-subsection">
@@ -437,7 +485,7 @@ export default function App() {
             <SectionHelp text="Stocks you trade: we count the full value. Stocks you hold for years: we estimate what part of each company is actually cash-like (we use 30% if we don't know). Then 2.5% of that." />
             <div className="form-subsubsection">
               <span className="form-subsubsection-label">Short-Term / Trading</span>
-              <InputRow label="Total market value" prefix="$" value={formData.stocksShortTerm} onChange={(v) => updateForm({ stocksShortTerm: v })} placeholder="e.g. 15000" />
+              <InputRow label="Total market value" prefix="$" value={formData.stocksShortTerm} onChange={(v) => updateFormWithReset({ stocksShortTerm: v })} placeholder="e.g. 15000" />
             </div>
             <div className="form-subsubsection">
               <span className="form-subsubsection-label">Long-Term Holdings</span>
@@ -456,27 +504,27 @@ export default function App() {
             <div className="card-field">
               <label>Method</label>
               <div className="card-pill">
-                <button type="button" className={(formData.retirementMethod || 'full') === 'full' ? 'active' : ''} onClick={() => updateForm({ retirementMethod: 'full' })}>Full balance</button>
-                <button type="button" className={formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1' ? 'active' : ''} onClick={() => updateForm({ retirementMethod: 'withdraw' })}>Must withdraw to pay</button>
-                <button type="button" className={formData.retirementMethod === 'method2' ? 'active' : ''} onClick={() => updateForm({ retirementMethod: 'method2' })}>Per fund</button>
+                <button type="button" className={(formData.retirementMethod || 'full') === 'full' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'full' })}>Full balance</button>
+                <button type="button" className={formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'withdraw' })}>Must withdraw to pay</button>
+                <button type="button" className={formData.retirementMethod === 'method2' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'method2' })}>Per fund</button>
               </div>
             </div>
             {(formData.retirementMethod || 'full') === 'full' ? (
-              <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateForm({ retirementBalance: v })} />
+              <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} />
             ) : (formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1') ? (
               <>
-                <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateForm({ retirementBalance: v })} />
+                <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} />
                 <div className="card-field">
                   <label>How would you like to enter your income?</label>
                   <div className="card-pill">
-                    <button type="button" className={formData.useTaxableIncome ? 'active' : ''} onClick={() => updateForm({ useTaxableIncome: true })}>Tax return (Line 15)</button>
-                    <button type="button" className={!formData.useTaxableIncome ? 'active' : ''} onClick={() => updateForm({ useTaxableIncome: false })}>Estimate gross</button>
+                    <button type="button" className={formData.useTaxableIncome ? 'active' : ''} onClick={() => updateFormWithReset({ useTaxableIncome: true })}>Tax return (Line 15)</button>
+                    <button type="button" className={!formData.useTaxableIncome ? 'active' : ''} onClick={() => updateFormWithReset({ useTaxableIncome: false })}>Estimate gross</button>
                   </div>
                 </div>
                 <div className="card-row">
                   <div className="card-field">
                     <label>Filing status</label>
-                    <select value={formData.filingStatus} onChange={(e) => updateForm({ filingStatus: e.target.value })}>
+                    <select value={formData.filingStatus} onChange={(e) => updateFormWithReset({ filingStatus: e.target.value })}>
                       <option>Single</option>
                       <option>Married Filing Jointly</option>
                       <option>Head of Household</option>
@@ -484,15 +532,15 @@ export default function App() {
                   </div>
                   <div className="card-field">
                     <label>State</label>
-                    <select value={formData.stateName} onChange={(e) => updateForm({ stateName: e.target.value })}>
+                    <select value={formData.stateName} onChange={(e) => updateFormWithReset({ stateName: e.target.value })}>
                       {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                 </div>
                 {formData.useTaxableIncome ? (
-                  <InputRow label="Taxable Income (Line 15)" prefix="$" value={formData.taxableIncome} onChange={(v) => updateForm({ taxableIncome: v })} />
+                  <InputRow label="Taxable Income (Line 15)" prefix="$" value={formData.taxableIncome} onChange={(v) => updateFormWithReset({ taxableIncome: v })} />
                 ) : (
-                  <InputRow label="Estimated gross annual income" prefix="$" value={formData.grossIncome} onChange={(v) => updateForm({ grossIncome: v })} />
+                  <InputRow label="Estimated gross annual income" prefix="$" value={formData.grossIncome} onChange={(v) => updateFormWithReset({ grossIncome: v })} />
                 )}
               </>
             ) : (
@@ -562,17 +610,17 @@ export default function App() {
             <div className="card-field">
               <label>Ownership</label>
               <div className="card-pill">
-                <button type="button" className={formData.businessSoleOwner ? 'active' : ''} onClick={() => updateForm({ businessSoleOwner: true })}>Sole Owner</button>
-                <button type="button" className={!formData.businessSoleOwner ? 'active' : ''} onClick={() => updateForm({ businessSoleOwner: false })}>Partial Owner</button>
+                <button type="button" className={formData.businessSoleOwner ? 'active' : ''} onClick={() => updateFormWithReset({ businessSoleOwner: true })}>Sole Owner</button>
+                <button type="button" className={!formData.businessSoleOwner ? 'active' : ''} onClick={() => updateFormWithReset({ businessSoleOwner: false })}>Partial Owner</button>
               </div>
             </div>
             {!formData.businessSoleOwner && (
-              <InputRow label="Ownership %" value={formData.businessOwnershipPct} onChange={(v) => updateForm({ businessOwnershipPct: v })} placeholder="e.g. 40" />
+              <InputRow label="Ownership %" value={formData.businessOwnershipPct} onChange={(v) => updateFormWithReset({ businessOwnershipPct: v })} placeholder="e.g. 40" />
             )}
-            <InputRow label="Business cash" prefix="$" value={formData.businessCash} onChange={(v) => updateForm({ businessCash: v })} />
-            <InputRow label="Inventory" prefix="$" value={formData.businessInventory} onChange={(v) => updateForm({ businessInventory: v })} />
-            <InputRow label="Receivables" prefix="$" value={formData.businessReceivables} onChange={(v) => updateForm({ businessReceivables: v })} />
-            <InputRow label="Business liabilities" prefix="$" value={formData.businessLiabilities} onChange={(v) => updateForm({ businessLiabilities: v })} />
+            <InputRow label="Business cash" prefix="$" value={formData.businessCash} onChange={(v) => updateFormWithReset({ businessCash: v })} />
+            <InputRow label="Inventory" prefix="$" value={formData.businessInventory} onChange={(v) => updateFormWithReset({ businessInventory: v })} />
+            <InputRow label="Receivables" prefix="$" value={formData.businessReceivables} onChange={(v) => updateFormWithReset({ businessReceivables: v })} />
+            <InputRow label="Business liabilities" prefix="$" value={formData.businessLiabilities} onChange={(v) => updateFormWithReset({ businessLiabilities: v })} />
           </div>
 
           <div className="form-subsection">
@@ -604,16 +652,94 @@ export default function App() {
               <span>Personal Liabilities</span>
             </div>
             <SectionHelp text="We subtract debts you have to pay soon. For your mortgage, we only count the next one payment, not the whole loan." />
-            <InputRow label="Credit card balances" prefix="$" value={formData.creditCard} onChange={(v) => updateForm({ creditCard: v })} />
-            <InputRow label="Mortgage (next principal payment)" prefix="$" value={formData.mortgageNextPrincipal} onChange={(v) => updateForm({ mortgageNextPrincipal: v })} />
-            <InputRow label="Personal loans due this year" prefix="$" value={formData.personalLoans} onChange={(v) => updateForm({ personalLoans: v })} />
-            <InputRow label="Money owed to family or friends" prefix="$" value={formData.moneyOwed} onChange={(v) => updateForm({ moneyOwed: v })} />
-            <InputRow label="Unpaid taxes & bills" prefix="$" value={formData.unpaidTaxesBills} onChange={(v) => updateForm({ unpaidTaxesBills: v })} />
-            <InputRow label="Unpaid zakat from previous years" prefix="$" value={formData.unpaidZakatPrior} onChange={(v) => updateForm({ unpaidZakatPrior: v })} />
-            <InputRow label="Other liabilities" prefix="$" value={formData.otherLiabilities} onChange={(v) => updateForm({ otherLiabilities: v })} />
+            <InputRow label="Credit card balances" prefix="$" value={formData.creditCard} onChange={(v) => updateFormWithReset({ creditCard: v })} />
+            <InputRow label="Mortgage (next principal payment)" prefix="$" value={formData.mortgageNextPrincipal} onChange={(v) => updateFormWithReset({ mortgageNextPrincipal: v })} />
+            <InputRow label="Personal loans due this year" prefix="$" value={formData.personalLoans} onChange={(v) => updateFormWithReset({ personalLoans: v })} />
+            <InputRow label="Money owed to family or friends" prefix="$" value={formData.moneyOwed} onChange={(v) => updateFormWithReset({ moneyOwed: v })} />
+            <InputRow label="Unpaid taxes & bills" prefix="$" value={formData.unpaidTaxesBills} onChange={(v) => updateFormWithReset({ unpaidTaxesBills: v })} />
+            <InputRow label="Unpaid zakat from previous years" prefix="$" value={formData.unpaidZakatPrior} onChange={(v) => updateFormWithReset({ unpaidZakatPrior: v })} />
+            <InputRow label="Other liabilities" prefix="$" value={formData.otherLiabilities} onChange={(v) => updateFormWithReset({ otherLiabilities: v })} />
           </div>
         </FormSection>
       </div>
+
+      <section className="donations-section">
+        <div className="donations-header">
+          <h2 className="donations-title">Where to Give</h2>
+        </div>
+        <p className="donations-intro">We gratefully accept general donations to support our mission.</p>
+
+        <div className="donations-section-label">Support FIKR</div>
+        <a href="https://www.zeffy.com/en-US/donation-form/donate-for-our-new-projects-for-intellectual-revival" target="_blank" rel="noopener noreferrer" className="donations-card donations-card-fikr">
+          <div>
+            <div className="donations-card-title">Donate to FIKR</div>
+            <div className="donations-card-desc">100% goes to our mission · Intellectual revival &amp; knowledge</div>
+          </div>
+          <span className="donations-card-arrow" aria-hidden>→</span>
+        </a>
+
+        <div className="donations-section-label">Alternative reputable organizations run under the supervision of competent &apos;ulama that you may consider</div>
+        <div className="donations-cards">
+          <a href="https://www.thirdpillar.us/" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Third Pillar</div>
+              <div className="donations-card-desc">Zakat distribution · Community support</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://www.brighterfuturesusa.org" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Brighter Futures</div>
+              <div className="donations-card-desc">Education &amp; community development</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://www.childrenofadam.us/" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Children of Adam</div>
+              <div className="donations-card-desc">Humanitarian relief &amp; development</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://al-misbaah.org/pages/our-team" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Al Misbaah</div>
+              <div className="donations-card-desc">Community services &amp; support</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://one-humanity.net/" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">One Humanity</div>
+              <div className="donations-card-desc">Global humanitarian work</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://www.darulihsan.com/donate/" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Darul Ihsan</div>
+              <div className="donations-card-desc">Zakat &amp; community programs</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://www.alimdaad.com/" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Al-Imdaad Foundation</div>
+              <div className="donations-card-desc">Emergency relief &amp; development</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+          <a href="https://www.jamiatsa.org/" target="_blank" rel="noopener noreferrer" className="donations-card">
+            <div>
+              <div className="donations-card-title">Jamiatul Ulama</div>
+              <div className="donations-card-desc">Scholarly oversight · Zakat distribution</div>
+            </div>
+            <span className="donations-card-arrow" aria-hidden>→</span>
+          </a>
+        </div>
+
+        <p className="donations-disclaimer">We are not affiliated with these organizations. Links are provided as a community service.</p>
+      </section>
 
       <footer className="dashboard-footer">
         <p>Zakat guide by <a href="https://fikr.us" target="_blank" rel="noopener noreferrer">Foundation for Inquiry, Knowledge and Revival</a></p>
@@ -637,7 +763,7 @@ function CryptoFormRow({ entry, onUpdate, onRemove }) {
   return (
     <div className="card-sub">
       <div className="card-sub-header">
-        <span>{entry.entryLabel || entry.name || 'Crypto'}</span>
+        <span>{entry.entryLabel || entry.name || 'Select coin'}</span>
         <button type="button" className="card-remove" onClick={onRemove} aria-label="Remove">×</button>
       </div>
       <div className="card-field">
@@ -652,7 +778,7 @@ function CryptoFormRow({ entry, onUpdate, onRemove }) {
         <CryptoAutocomplete
           value={entry.name}
           onChange={(v) => onUpdate({ name: v })}
-          onCoinSelect={(c) => onUpdate({ coinId: c.id, name: c.name, price: c.price != null ? String(c.price) : '' })}
+          onCoinSelect={(c) => onUpdate({ coinId: c.id, name: c.name, entryLabel: c.name, price: c.price != null ? String(c.price) : '' })}
         />
       </div>
       <div className="card-row">
@@ -662,7 +788,7 @@ function CryptoFormRow({ entry, onUpdate, onRemove }) {
           <div className="input-with-refresh">
             <div className="input-wrap">
               <span className="prefix">$</span>
-              <input type="number" className="input has-prefix" value={entry.price ?? ''} onChange={(e) => onUpdate({ price: e.target.value })} placeholder="Auto-filled" min="0" step="0.01" />
+              <input type="number" className="input has-prefix" value={entry.price ?? ''} onChange={(e) => onUpdate({ price: e.target.value })} placeholder="Auto-filled" min="0" step="0.01" inputMode="decimal" />
             </div>
             <button type="button" className="btn-refresh" onClick={handleRefresh} disabled={!entry.coinId || refreshing} title="Refresh price">
               {refreshing ? '…' : '↻'}
