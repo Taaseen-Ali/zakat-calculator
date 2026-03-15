@@ -349,6 +349,19 @@
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.35);
   font-size: 15px;
+  align-items: flex-start;
+}
+
+.calc-step-label-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calc-step-label-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .calc-step-result .calc-step-value {
@@ -458,32 +471,39 @@
   }
 
   .dashboard-header {
-    flex-wrap: nowrap;
-    gap: 8px;
-    margin-bottom: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
   }
 
   .dashboard-brand {
-    flex: 1;
+    flex: 0 0 auto;
     min-width: 0;
+    order: 1;
+  }
+
+  .dashboard-meta {
+    order: 2;
   }
 
   .dashboard-title {
-    font-size: 18px;
+    font-size: 20px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .prices-pill {
-    padding: 4px 8px;
-    gap: 6px;
+    padding: 6px 10px;
+    gap: 8px;
     flex-shrink: 0;
   }
 
   .prices-pill span {
     padding: 4px 6px;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .prices-pill button {
@@ -492,12 +512,25 @@
   }
 
   .dashboard-result {
-    padding: 10px 12px;
+    padding: 14px 16px;
     margin-bottom: 20px;
   }
 
   .result-top {
-    gap: 10px;
+    gap: 12px;
+  }
+
+  .result-label {
+    font-size: 13px;
+  }
+
+  .result-amount {
+    font-size: 26px;
+  }
+
+  .result-calc-link {
+    font-size: 15px;
+    padding: 6px 14px;
   }
 
   .nisab-selector {
@@ -509,11 +542,11 @@
   }
 
   .nisab-selector-label {
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .nisab-selector-desc {
-    font-size: 10px;
+    font-size: 11px;
     margin: 1px 0 4px;
   }
 
@@ -523,19 +556,15 @@
   }
 
   .nisab-selector .nisab-pill button {
-    padding: 5px 10px;
-    font-size: 11px;
+    padding: 6px 12px;
+    font-size: 13px;
     white-space: nowrap;
   }
 
   .result-details {
-    font-size: 10px;
-    gap: 8px;
-    margin-top: 6px;
-  }
-
-  .result-amount {
-    font-size: 22px;
+    font-size: 13px;
+    gap: 10px;
+    margin-top: 10px;
   }
 
   .btn-pdf {
@@ -665,6 +694,11 @@
   .add-more {
     padding: 6px 10px;
     font-size: 11px;
+  }
+
+  .card-pill button {
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
 
@@ -1363,8 +1397,9 @@
 
 .card-pill {
   display: inline-flex;
-  flex-shrink: 0;
+  flex-wrap: wrap;
   width: fit-content;
+  max-width: 100%;
   align-self: flex-start;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border);
@@ -1373,7 +1408,7 @@
 }
 
 .card-pill button {
-  padding: 8px 16px;
+  padding: 8px 14px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
@@ -1393,6 +1428,21 @@
 .card-pill button.active {
   background: rgba(201, 162, 39, 0.35);
   color: var(--fikr-gold-light);
+}
+
+.card-pill-retirement {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  width: 100%;
+}
+
+.card-pill-retirement button:not(.card-pill-full) {
+  flex: none;
+}
+
+.card-pill-full {
+  grid-column: 1 / -1;
 }
 
 .card-sub {
@@ -1600,33 +1650,39 @@
 }
 
 .zakat-sticky-bar-content {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 2px 24px;
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  justify-content: space-between;
-  gap: 24px;
+  align-items: baseline;
+  justify-items: start;
 }
 
-.zakat-sticky-bar-left {
+.zakat-sticky-bar-content .zakat-sticky-bar-label:nth-child(2),
+.zakat-sticky-bar-content .zakat-sticky-bar-amount:nth-child(5) {
+  justify-self: center;
+}
+
+.zakat-sticky-bar-content .zakat-sticky-bar-label:nth-child(3) {
+  justify-self: end;
+}
+
+.zakat-sticky-bar-amount-cell {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-end;
+  gap: 2px;
+  justify-self: end;
 }
 
-.zakat-sticky-bar-row {
+.zakat-sticky-bar-amount-cell-full {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.zakat-sticky-bar-right {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-self: end;
 }
 
 .zakat-sticky-bar-label {
@@ -1650,15 +1706,16 @@
 }
 
 .zakat-sticky-bar-calc {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   background: rgba(201, 162, 39, 0.12);
   border: 1px solid rgba(201, 162, 39, 0.35);
   border-radius: 5px;
   cursor: pointer;
-  padding: 5px 12px;
+  padding: 4px 10px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .zakat-sticky-bar-calc:hover {
@@ -1682,6 +1739,35 @@
 
 .zakat-sticky-bar-see-calc:hover {
   color: white;
+}
+
+@media (max-width: 600px) {
+  .zakat-sticky-bar {
+    padding: 10px 12px;
+  }
+
+  .zakat-sticky-bar-content {
+    gap: 2px 12px;
+    max-width: none;
+  }
+
+  .zakat-sticky-bar-label {
+    font-size: 11px;
+  }
+
+  .zakat-sticky-bar-amount {
+    font-size: 15px;
+  }
+
+  .zakat-sticky-bar-calc {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .zakat-sticky-bar-see-calc {
+    font-size: 11px;
+    white-space: nowrap;
+  }
 }
 
 /* Form layout — collapsible sections matching zakat-calculator-henna */

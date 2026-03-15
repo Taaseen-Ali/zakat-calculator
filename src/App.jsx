@@ -261,36 +261,30 @@ export default function App() {
     <div className="dashboard">
       <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'}`} aria-hidden={!showStickyBar}>
         <div className="zakat-sticky-bar-content">
-          <div className="zakat-sticky-bar-left">
-            <div className="zakat-sticky-bar-row">
-              <span className="zakat-sticky-bar-label">Assets</span>
-              <span className="zakat-sticky-bar-amount">${result.totalZakatableAssets.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+          <span className="zakat-sticky-bar-label">Assets</span>
+          <span className="zakat-sticky-bar-label">Liabilities</span>
+          <span className="zakat-sticky-bar-label">Zakat due</span>
+          <span className="zakat-sticky-bar-amount">${result.totalZakatableAssets.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+          <span className="zakat-sticky-bar-amount">${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+          {zakatCalculated ? (
+            <div className="zakat-sticky-bar-amount-cell">
+              <span className="zakat-sticky-bar-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <button
+                type="button"
+                className="zakat-sticky-bar-see-calc"
+                onClick={() => {
+                  resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  setShowCalculation(true)
+                }}
+              >
+                See calculation
+              </button>
             </div>
-            <div className="zakat-sticky-bar-row">
-              <span className="zakat-sticky-bar-label">Liabilities</span>
-              <span className="zakat-sticky-bar-amount">${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
-            </div>
-          </div>
-          <div className="zakat-sticky-bar-right">
-            <span className="zakat-sticky-bar-label">Zakat due</span>
-            {zakatCalculated ? (
-              <>
-                <span className="zakat-sticky-bar-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                <button
-                  type="button"
-                  className="zakat-sticky-bar-see-calc"
-                  onClick={() => {
-                    resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    setShowCalculation(true)
-                  }}
-                >
-                  See calculation
-                </button>
-              </>
-            ) : (
+          ) : (
+            <div className="zakat-sticky-bar-amount-cell zakat-sticky-bar-amount-cell-full">
               <button type="button" className="zakat-sticky-bar-calc" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -415,7 +409,10 @@ export default function App() {
               </div>
               {result.meetsNisab ? (
                 <div className="calc-step calc-step-result">
-                  <span className="calc-step-label">Zakat due (2.5% of net wealth)</span>
+                  <div className="calc-step-label-wrap">
+                    <span className="calc-step-label">Zakat due</span>
+                    <span className="calc-step-label-sub">(2.5% of net wealth)</span>
+                  </div>
                   <span className="calc-step-value">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               ) : (
@@ -503,10 +500,10 @@ export default function App() {
             <SectionHelp text="Usually you pay zakat on the full amount in your 401k. But if you have no other cash and must pull from it to pay, we first subtract the penalty and taxes, then you pay zakat on what's left." />
             <div className="card-field">
               <label>Method</label>
-              <div className="card-pill">
+              <div className="card-pill card-pill-retirement">
                 <button type="button" className={(formData.retirementMethod || 'full') === 'full' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'full' })}>Full balance</button>
-                <button type="button" className={formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'withdraw' })}>Must withdraw to pay</button>
                 <button type="button" className={formData.retirementMethod === 'method2' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'method2' })}>Per fund</button>
+                <button type="button" className={`card-pill-full ${formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1' ? 'active' : ''}`} onClick={() => updateFormWithReset({ retirementMethod: 'withdraw' })}>Must withdraw to pay</button>
               </div>
             </div>
             {(formData.retirementMethod || 'full') === 'full' ? (
