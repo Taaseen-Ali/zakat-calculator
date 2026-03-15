@@ -127,33 +127,33 @@
 .nisab-selector-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
 .nisab-selector-label {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .nisab-selector-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.88);
-  margin: 2px 0 6px;
+  margin: 2px 0 4px;
 }
 
 .nisab-selector .nisab-pill {
   display: inline-flex;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .nisab-selector .nisab-pill button {
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 4px 10px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   background: transparent;
@@ -194,9 +194,10 @@
 
 /* Result block */
 .dashboard-result {
+  position: relative;
   background: linear-gradient(135deg, var(--fikr-forest) 0%, var(--fikr-mid) 100%);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 18px 20px 52px 20px;
   margin-bottom: 12px;
   border: 1px solid rgba(201, 162, 39, 0.2);
   flex-shrink: 0;
@@ -206,16 +207,24 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .result-top-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12px;
   flex-shrink: 0;
+}
+
+.result-bottom-right {
+  position: absolute;
+  bottom: 18px;
+  right: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Hide sensitive numbers switch */
@@ -302,10 +311,32 @@
   transform: translateX(16px);
 }
 
+.dashboard-result .hide-sensitive-switch {
+  gap: 8px;
+}
+
+.dashboard-result .hide-sensitive-label {
+  font-size: 11px;
+}
+
+.dashboard-result .hide-sensitive-toggle {
+  width: 34px;
+  height: 18px;
+}
+
+.dashboard-result .hide-sensitive-slider::before {
+  height: 14px;
+  width: 14px;
+}
+
+.dashboard-result .hide-sensitive-toggle input:checked + .hide-sensitive-slider::before {
+  transform: translateX(16px);
+}
+
 .result-main {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
 
 .result-label {
@@ -323,6 +354,17 @@
   letter-spacing: -0.02em;
 }
 
+@keyframes gold-border-pulse {
+  0%, 100% {
+    border-color: rgba(201, 162, 39, 0.5);
+    box-shadow: 0 0 6px rgba(201, 162, 39, 0.15);
+  }
+  50% {
+    border-color: rgba(229, 200, 74, 0.85);
+    box-shadow: 0 0 10px rgba(201, 162, 39, 0.35);
+  }
+}
+
 .result-calc-link {
   font-size: 14px;
   font-weight: 500;
@@ -332,25 +374,28 @@
   border-radius: 5px;
   cursor: pointer;
   padding: 5px 12px;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s;
+  animation: gold-border-pulse 2.5s ease-in-out infinite;
 }
 
 .result-calc-link:hover {
   background: rgba(201, 162, 39, 0.2);
   border-color: rgba(201, 162, 39, 0.5);
   color: white;
+  animation: none;
 }
 
 .result-details {
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  font-size: 11px;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.92);
 }
 
 .btn-pdf {
-  margin-top: 10px;
+  display: block;
+  margin: 10px auto 0;
   padding: 7px 14px;
   font-size: 14px;
   font-weight: 600;
@@ -359,7 +404,7 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .btn-pdf:hover {
@@ -636,24 +681,36 @@
   }
 
   .dashboard-result {
-    padding: 14px 16px;
+    padding: 18px 16px 52px 16px;
     margin-bottom: 20px;
   }
 
   .result-top {
-    gap: 12px;
-    flex-direction: column;
-    align-items: stretch;
+    gap: 16px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
   }
 
   .result-top-right {
-    width: 100%;
-    align-items: flex-start;
-    order: 2;
+    align-items: flex-end;
+    flex-shrink: 0;
   }
 
   .result-main {
-    order: 1;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .result-details {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .result-bottom-right {
+    bottom: 16px;
+    right: 16px;
   }
 
   .result-label {
@@ -665,12 +722,12 @@
   }
 
   .result-calc-link {
-    font-size: 15px;
-    padding: 6px 14px;
+    font-size: 13px;
+    padding: 4px 10px;
   }
 
   .nisab-selector {
-    text-align: left;
+    text-align: right;
   }
 
   .nisab-selector-header {
@@ -678,12 +735,12 @@
   }
 
   .nisab-selector-label {
-    font-size: 13px;
+    font-size: 10px;
   }
 
   .nisab-selector-desc {
-    font-size: 11px;
-    margin: 1px 0 4px;
+    font-size: 10px;
+    margin: 1px 0 2px;
   }
 
   .nisab-selector .nisab-pill {
@@ -692,19 +749,20 @@
   }
 
   .nisab-selector .nisab-pill button {
-    padding: 6px 12px;
-    font-size: 13px;
+    padding: 3px 8px;
+    font-size: 10px;
     white-space: nowrap;
   }
 
   .result-details {
     font-size: 13px;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 10px 16px;
   }
 
   .btn-pdf {
     margin-top: 8px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 8px 14px;
   }
 
@@ -1822,17 +1880,14 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
+  background: none;
+  border: none;
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 
 .zakat-sticky-bar-minimize:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
   color: white;
 }
 
@@ -1890,7 +1945,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: auto auto;
-  gap: 2px 24px;
+  gap: 10px 24px;
   flex: 1;
   min-width: 0;
   align-items: baseline;
@@ -1933,22 +1988,24 @@
 }
 
 .zakat-sticky-bar-calc {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   background: rgba(201, 162, 39, 0.12);
   border: 1px solid rgba(201, 162, 39, 0.35);
   border-radius: 5px;
   cursor: pointer;
-  padding: 4px 10px;
-  transition: all 0.2s;
+  padding: 3px 8px;
+  transition: background 0.2s, color 0.2s;
   white-space: nowrap;
+  animation: gold-border-pulse 2.5s ease-in-out infinite;
 }
 
 .zakat-sticky-bar-calc:hover {
   background: rgba(201, 162, 39, 0.2);
   border-color: rgba(201, 162, 39, 0.5);
   color: white;
+  animation: none;
 }
 
 .zakat-sticky-bar-see-calc {
@@ -2005,7 +2062,7 @@
   }
 
   .zakat-sticky-bar-content {
-    gap: 2px 12px;
+    gap: 10px 12px;
   }
 
   .zakat-sticky-bar-label {
@@ -2017,8 +2074,8 @@
   }
 
   .zakat-sticky-bar-calc {
-    font-size: 12px;
-    padding: 4px 8px;
+    font-size: 11px;
+    padding: 3px 6px;
   }
 
   .zakat-sticky-bar-see-calc {

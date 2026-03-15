@@ -358,23 +358,25 @@ export default function App() {
             )}
           </div>
           <div className="result-top-right">
-            <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} />
             <div className="nisab-selector">
-            <div className="nisab-selector-header">
-              <span className="nisab-selector-label">Nisab threshold</span>
-              <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g)." />
+              <div className="nisab-selector-header">
+                <span className="nisab-selector-label">Nisab threshold</span>
+                <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g)." />
+              </div>
+              <div className="nisab-pill">
+                <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('gold'); }}>Gold 87.48g</button>
+                <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('silver'); }}>Silver 612.36g</button>
+              </div>
             </div>
-            <div className="nisab-pill">
-              <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('gold'); }}>Gold 87.48g</button>
-              <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('silver'); }}>Silver 612.36g</button>
-            </div>
-          </div>
           </div>
         </div>
         <div className="result-details">
           <span>Assets ${fmt(result.totalZakatableAssets)}</span>
           <span>− Liabilities ${fmt(result.totalLiabilities)}</span>
           <span>Nisab ${fmt(result.nisab)}</span>
+        </div>
+        <div className="result-bottom-right">
+          <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} />
         </div>
         {zakatCalculated && (
           <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result)}>Download PDF</button>
@@ -511,7 +513,7 @@ export default function App() {
             <div className="form-subsection-header">
               <span>Cryptocurrency</span>
             </div>
-            <SectionHelp text="Crypto is created like a commodity, not like money. If you're holding it to trade (buy and sell soon), it counts. If you're holding it long-term, it doesn't." />
+            <SectionHelp text="Crypto is treated like a commodity, not like money. If you're holding it to trade (buy and sell soon), it counts. If you're holding it long-term, it doesn't." />
             {(formData.cryptoList || []).map((c, i) => (
               <CryptoFormRow key={c.id || i} entry={c} onUpdate={(d) => updateCrypto(i, d)} onRemove={() => removeCrypto(i)} />
             ))}
