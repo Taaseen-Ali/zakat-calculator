@@ -60,6 +60,12 @@
   flex-wrap: wrap;
 }
 
+@media (min-width: 769px) {
+  .dashboard-meta .prices-pill {
+    margin-left: auto;
+  }
+}
+
 .header-logo-link {
   display: flex;
   align-items: center;
@@ -75,6 +81,24 @@
 
 .header-logo:hover {
   opacity: 1;
+}
+
+.btn-clear-form {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear-form:hover {
+  color: var(--text);
+  border-color: var(--fikr-accent);
+  background: rgba(45, 107, 82, 0.08);
 }
 
 .prices-pill {
@@ -186,6 +210,97 @@
   flex-wrap: wrap;
 }
 
+.result-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Hide sensitive numbers switch */
+.hide-sensitive-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hide-sensitive-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.hide-sensitive-toggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.hide-sensitive-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.hide-sensitive-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 22px;
+  transition: all 0.2s;
+}
+
+.hide-sensitive-slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.hide-sensitive-toggle input:checked + .hide-sensitive-slider {
+  background: rgba(201, 162, 39, 0.4);
+  border-color: rgba(201, 162, 39, 0.6);
+}
+
+.hide-sensitive-toggle input:checked + .hide-sensitive-slider::before {
+  transform: translateX(18px);
+}
+
+.hide-sensitive-switch--sticky .hide-sensitive-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.hide-sensitive-switch--sticky .hide-sensitive-toggle {
+  width: 36px;
+  height: 20px;
+}
+
+.hide-sensitive-switch--sticky .hide-sensitive-slider::before {
+  height: 14px;
+  width: 14px;
+}
+
+.hide-sensitive-switch--sticky .hide-sensitive-toggle input:checked + .hide-sensitive-slider::before {
+  transform: translateX(16px);
+}
 
 .result-main {
   display: flex;
@@ -486,6 +601,15 @@
 
   .dashboard-meta {
     order: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-clear-form {
+    font-size: 13px;
+    padding: 6px 12px;
   }
 
   .dashboard-title {
@@ -518,6 +642,18 @@
 
   .result-top {
     gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .result-top-right {
+    width: 100%;
+    align-items: flex-start;
+    order: 2;
+  }
+
+  .result-main {
+    order: 1;
   }
 
   .result-label {
@@ -534,7 +670,7 @@
   }
 
   .nisab-selector {
-    text-align: right;
+    text-align: left;
   }
 
   .nisab-selector-header {
@@ -1504,8 +1640,8 @@
 }
 
 .donations-intro {
-  font-size: 14px;
-  color: rgba(201, 162, 39, 0.7);
+  font-size: 15px;
+  color: var(--text-muted);
   line-height: 1.7;
   margin: 0 0 4px 0;
 }
@@ -1514,7 +1650,7 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(201, 162, 39, 0.65);
+  color: rgba(255, 255, 255, 0.85);
   margin: 16px 0 10px 0;
 }
 
@@ -1542,6 +1678,18 @@
   border-color: rgba(201, 162, 39, 0.4);
 }
 
+.donations-card:hover .donations-card-title {
+  color: var(--fikr-gold-light);
+}
+
+.donations-card:hover .donations-card-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.donations-card:hover .donations-card-arrow {
+  color: var(--fikr-gold-light);
+}
+
 .donations-card-fikr {
   background: rgba(45, 107, 82, 0.12);
   border-color: rgba(45, 107, 82, 0.35);
@@ -1555,11 +1703,11 @@
 .donations-card-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--fikr-gold-light);
+  color: var(--text);
 }
 
 .donations-card-fikr .donations-card-title {
-  color: var(--fikr-accent);
+  color: var(--text);
 }
 
 .donations-card-fikr:hover .donations-card-title {
@@ -1567,37 +1715,38 @@
 }
 
 .donations-card-desc {
-  font-size: 0.7rem;
-  color: rgba(201, 162, 39, 0.45);
-  margin-top: 2px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.5;
 }
 
 .donations-card-fikr .donations-card-desc {
-  color: rgba(45, 107, 82, 0.7);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .donations-card-fikr:hover .donations-card-desc {
-  color: rgba(201, 162, 39, 0.5);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .donations-card-arrow {
   font-size: 1rem;
-  color: rgba(201, 162, 39, 0.5);
+  color: rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
   margin-left: 12px;
 }
 
 .donations-card-fikr .donations-card-arrow {
-  color: rgba(45, 107, 82, 0.6);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .donations-card-fikr:hover .donations-card-arrow {
-  color: rgba(201, 162, 39, 0.6);
+  color: var(--fikr-gold-light);
 }
 
 .donations-disclaimer {
-  font-size: 12px;
-  color: rgba(240, 243, 242, 0.55);
+  font-size: 13px;
+  color: var(--text-muted);
   text-align: center;
   line-height: 1.6;
   margin: 16px 0 0 0;
@@ -1637,7 +1786,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 24px;
+  padding: 20px 28px;
   background: linear-gradient(135deg, var(--fikr-forest) 0%, var(--fikr-mid) 100%);
   border-bottom: 1px solid rgba(201, 162, 39, 0.2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -1649,14 +1798,23 @@
   pointer-events: none;
 }
 
+.zakat-sticky-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
 .zakat-sticky-bar-content {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: auto auto;
   gap: 2px 24px;
-  width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
+  flex: 1;
+  min-width: 0;
   align-items: baseline;
   justify-items: start;
 }
@@ -1743,12 +1901,17 @@
 
 @media (max-width: 600px) {
   .zakat-sticky-bar {
-    padding: 10px 12px;
+    padding: 16px 18px;
+  }
+
+  .zakat-sticky-bar-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
 
   .zakat-sticky-bar-content {
     gap: 2px 12px;
-    max-width: none;
   }
 
   .zakat-sticky-bar-label {

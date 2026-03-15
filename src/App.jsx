@@ -148,6 +148,18 @@ function InfoTooltip({ text }) {
   )
 }
 
+function HideSensitiveSwitch({ checked, onChange, className = '' }) {
+  return (
+    <label className={`hide-sensitive-switch ${className}`}>
+      <span className="hide-sensitive-label">Hide sensitive numbers</span>
+      <span className="hide-sensitive-toggle">
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} aria-label="Hide sensitive numbers" />
+        <span className="hide-sensitive-slider" />
+      </span>
+    </label>
+  )
+}
+
 function SectionHelp({ text, compact }) {
   const [expanded, setExpanded] = useState(true)
   if (!text) return null
@@ -206,7 +218,10 @@ export default function App() {
   const [showCalculation, setShowCalculation] = useState(false)
   const [showStickyBar, setShowStickyBar] = useState(false)
   const [zakatCalculated, setZakatCalculated] = useState(false)
+  const [hideSensitiveNumbers, setHideSensitiveNumbers] = useLocalState('fikr-hideSensitive', false)
   const resultRef = useRef(null)
+
+  const fmt = (n, dec = 0) => hideSensitiveNumbers ? 'XXX' : (typeof n === 'number' ? n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : '')
 
   const updateFormWithReset = (updates) => {
     setZakatCalculated(false)
@@ -260,15 +275,16 @@ export default function App() {
   return (
     <div className="dashboard">
       <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'}`} aria-hidden={!showStickyBar}>
-        <div className="zakat-sticky-bar-content">
-          <span className="zakat-sticky-bar-label">Assets</span>
-          <span className="zakat-sticky-bar-label">Liabilities</span>
-          <span className="zakat-sticky-bar-label">Zakat due</span>
-          <span className="zakat-sticky-bar-amount">${result.totalZakatableAssets.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
-          <span className="zakat-sticky-bar-amount">${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
-          {zakatCalculated ? (
-            <div className="zakat-sticky-bar-amount-cell">
-              <span className="zakat-sticky-bar-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="zakat-sticky-bar-inner">
+          <div className="zakat-sticky-bar-content">
+            <span className="zakat-sticky-bar-label">Assets</span>
+            <span className="zakat-sticky-bar-label">Liabilities</span>
+            <span className="zakat-sticky-bar-label">Zakat due</span>
+            <span className="zakat-sticky-bar-amount">${fmt(result.totalZakatableAssets)}</span>
+            <span className="zakat-sticky-bar-amount">${fmt(result.totalLiabilities)}</span>
+            {zakatCalculated ? (
+              <div className="zakat-sticky-bar-amount-cell">
+                <span className="zakat-sticky-bar-amount">${fmt(result.zakatDue, 2)}</span>
               <button
                 type="button"
                 className="zakat-sticky-bar-see-calc"
@@ -285,6 +301,8 @@ export default function App() {
               <button type="button" className="zakat-sticky-bar-calc" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
             </div>
           )}
+          </div>
+          <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} className="hide-sensitive-switch--sticky" />
         </div>
       </div>
 
@@ -299,6 +317,9 @@ export default function App() {
           </div>
         </div>
         <div className="dashboard-meta">
+          <button type="button" className="btn-clear-form" onClick={() => { setFormData(defaultFormData); setZakatCalculated(false); }}>
+            Clear form
+          </button>
           <div className="prices-pill">
             <span>{pricesLoading ? '…' : (goldPrice != null ? `Gold $${goldPrice}/g` : 'Gold')}</span>
             <span>{pricesLoading ? '…' : (silverPrice != null ? `Silver $${silverPrice}/g` : 'Silver')}</span>
@@ -312,12 +333,14 @@ export default function App() {
           <div className="result-main">
             <span className="result-label">Zakat due</span>
             {zakatCalculated ? (
-              <span className="result-amount">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="result-amount">${fmt(result.zakatDue, 2)}</span>
             ) : (
               <button type="button" className="result-calc-link" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
             )}
           </div>
-          <div className="nisab-selector">
+          <div className="result-top-right">
+            <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} />
+            <div className="nisab-selector">
             <div className="nisab-selector-header">
               <span className="nisab-selector-label">Nisab threshold</span>
               <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g)." />
@@ -327,11 +350,12 @@ export default function App() {
               <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('silver'); }}>Silver 612.36g</button>
             </div>
           </div>
+          </div>
         </div>
         <div className="result-details">
-          <span>Assets ${result.totalZakatableAssets.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
-          <span>− Liabilities ${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
-          <span>Nisab ${result.nisab.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+          <span>Assets ${fmt(result.totalZakatableAssets)}</span>
+          <span>− Liabilities ${fmt(result.totalLiabilities)}</span>
+          <span>Nisab ${fmt(result.nisab)}</span>
         </div>
         {zakatCalculated && (
           <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result)}>Download PDF</button>
@@ -355,18 +379,18 @@ export default function App() {
                   <div key={section.type || section.label} className="calc-section-sub">
                     <div className="calc-step calc-step-sub calc-step-section">
                       <span className="calc-step-label">{section.label}</span>
-                      <span className="calc-step-value">${section.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="calc-step-value">${fmt(section.value, 2)}</span>
                     </div>
                     {section.entries?.map((entry, i) => (
                       <div key={i} className="calc-entry-detail">
                         <div className="calc-step calc-step-entry">
                           <span className="calc-step-label">{entry.label}</span>
-                          <span className="calc-step-value">${entry.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className="calc-step-value">${fmt(entry.value, 2)}</span>
                         </div>
                         {entry.steps?.map((step, j) => (
                           <div key={j} className="calc-step calc-step-mini">
                             <span className="calc-step-label">{step.desc}</span>
-                            <span className="calc-step-value">{step.value >= 0 ? '$' : '−$'}{Math.abs(step.value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="calc-step-value">{step.value >= 0 ? '$' : '−$'}{fmt(Math.abs(step.value), 2)}</span>
                           </div>
                         ))}
                       </div>
@@ -375,7 +399,7 @@ export default function App() {
                 ))}
                 <div className="calc-step calc-step-total">
                   <span className="calc-step-label">Total zakatable assets</span>
-                  <span className="calc-step-value">${result.totalZakatableAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="calc-step-value">${fmt(result.totalZakatableAssets, 2)}</span>
                 </div>
               </div>
               <div className="calc-section">
@@ -384,28 +408,28 @@ export default function App() {
                   <div key={idx} className="calc-section-sub">
                     <div className="calc-step calc-step-sub calc-step-section">
                       <span className="calc-step-label">{section.label}</span>
-                      <span className="calc-step-value">−${section.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="calc-step-value">−${fmt(section.value, 2)}</span>
                     </div>
                     {section.entries?.map((entry, i) => (
                       <div key={i} className="calc-step calc-step-entry">
                         <span className="calc-step-label">{entry.label}</span>
-                        <span className="calc-step-value">−${entry.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="calc-step-value">−${fmt(entry.value, 2)}</span>
                       </div>
                     ))}
                   </div>
                 ))}
                 <div className="calc-step calc-step-total">
                   <span className="calc-step-label">Total liabilities</span>
-                  <span className="calc-step-value">−${result.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="calc-step-value">−${fmt(result.totalLiabilities, 2)}</span>
                 </div>
               </div>
               <div className="calc-step calc-step-equals">
                 <span className="calc-step-label">Net zakatable wealth</span>
-                <span className="calc-step-value">${result.netZakatableWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="calc-step-value">${fmt(result.netZakatableWealth, 2)}</span>
               </div>
               <div className="calc-step">
                 <span className="calc-step-label">Nisab threshold</span>
-                <span className="calc-step-value">${result.nisab.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="calc-step-value">${fmt(result.nisab, 2)}</span>
               </div>
               {result.meetsNisab ? (
                 <div className="calc-step calc-step-result">
@@ -413,12 +437,12 @@ export default function App() {
                     <span className="calc-step-label">Zakat due</span>
                     <span className="calc-step-label-sub">(2.5% of net wealth)</span>
                   </div>
-                  <span className="calc-step-value">${result.zakatDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="calc-step-value">${fmt(result.zakatDue, 2)}</span>
                 </div>
               ) : (
                 <div className="calc-step calc-step-result">
                   <span className="calc-step-label">Net wealth below nisab. No zakat due.</span>
-                  <span className="calc-step-value">$0.00</span>
+                  <span className="calc-step-value">{hideSensitiveNumbers ? '$XXX' : '$0.00'}</span>
                 </div>
               )}
             </div>
