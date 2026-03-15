@@ -1,7 +1,7 @@
 export const ASSET_TYPES = [
   { id: 'cash', label: 'Cash & savings', icon: '💵', desc: 'Bank accounts, checking, savings', tooltip: 'Add up everything in your bank: checking, savings, and cash at home. We take 2.5% of that total.' },
   { id: 'gold_silver', label: 'Gold & silver', icon: '🥇', desc: 'Precious metals you own', tooltip: 'We multiply how much you have (in grams) by today\'s price. All of it counts toward zakat. Use the refresh button to get the latest prices.' },
-  { id: 'crypto', label: 'Cryptocurrency', icon: '₿', desc: 'Bitcoin, Ethereum, etc.', tooltip: 'Crypto is treated like something you bought to sell, not like money. If you\'re holding it to trade (buy and sell soon), it counts. If you\'re holding it long-term, it doesn\'t.' },
+  { id: 'crypto', label: 'Cryptocurrency', icon: '₿', desc: 'Bitcoin, Ethereum, etc.', tooltip: 'Crypto is created like a commodity, not like money. If you\'re holding it to trade (buy and sell soon), it counts. If you\'re holding it long-term, it doesn\'t.' },
   { id: 'stocks_short', label: 'Stocks (trading)', icon: '📈', desc: 'Held under 1 year', tooltip: 'Stocks you bought to sell soon? We count the full value and take 2.5%.' },
   { id: 'stocks_long', label: 'Stocks (long-term)', icon: '🌱', desc: 'Held over 1 year', tooltip: 'Stocks you\'re holding for years? We estimate what part of each company is actually cash-like. If we don\'t know, we use 30%.' },
   { id: 'retirement', label: '401(k) / IRA', icon: '🏛️', desc: 'Retirement accounts', tooltip: 'Usually you pay zakat on the full amount. But if you have no other cash and must pull from your 401k to pay, we first subtract the penalty and taxes, then you pay zakat on what\'s left.' },

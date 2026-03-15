@@ -511,7 +511,7 @@ export default function App() {
             <div className="form-subsection-header">
               <span>Cryptocurrency</span>
             </div>
-            <SectionHelp text="Crypto is treated like something you bought to sell, not like money. If you're holding it to trade (buy and sell soon), it counts. If you're holding it long-term, it doesn't." />
+            <SectionHelp text="Crypto is created like a commodity, not like money. If you're holding it to trade (buy and sell soon), it counts. If you're holding it long-term, it doesn't." />
             {(formData.cryptoList || []).map((c, i) => (
               <CryptoFormRow key={c.id || i} entry={c} onUpdate={(d) => updateCrypto(i, d)} onRemove={() => removeCrypto(i)} />
             ))}
