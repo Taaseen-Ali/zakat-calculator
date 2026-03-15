@@ -217,6 +217,7 @@ export default function App() {
 
   const [showCalculation, setShowCalculation] = useState(false)
   const [showStickyBar, setShowStickyBar] = useState(false)
+  const [stickyBarMinimized, setStickyBarMinimized] = useLocalState('fikr-stickyBarMinimized', false)
   const [zakatCalculated, setZakatCalculated] = useState(false)
   const [hideSensitiveNumbers, setHideSensitiveNumbers] = useLocalState('fikr-hideSensitive', false)
   const resultRef = useRef(null)
@@ -274,7 +275,7 @@ export default function App() {
 
   return (
     <div className="dashboard">
-      <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'}`} aria-hidden={!showStickyBar}>
+      <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'} ${stickyBarMinimized ? 'minimized' : ''}`} aria-hidden={!showStickyBar}>
         <div className="zakat-sticky-bar-inner">
           <div className="zakat-sticky-bar-content">
             <span className="zakat-sticky-bar-label">Assets</span>
@@ -304,6 +305,24 @@ export default function App() {
           </div>
           <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} className="hide-sensitive-switch--sticky" />
         </div>
+        {stickyBarMinimized && (
+          <div className="zakat-sticky-bar-brand">
+            <a href="https://fikr.us" target="_blank" rel="noopener noreferrer" className="zakat-sticky-bar-logo-link" aria-label="FIKR">
+              <img src={`${import.meta.env.BASE_URL}fikr-logo.png`} alt="FIKR" className="zakat-sticky-bar-logo" />
+            </a>
+            <span className="zakat-sticky-bar-title">FIKR Zakat Calculator</span>
+          </div>
+        )}
+        <button
+          type="button"
+          className="zakat-sticky-bar-minimize"
+          onClick={() => setStickyBarMinimized((m) => !m)}
+          aria-label={stickyBarMinimized ? 'Expand zakat summary' : 'Minimize zakat summary'}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={stickyBarMinimized ? 'chevron-up' : 'chevron-down'}>
+            <path d={stickyBarMinimized ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'} />
+          </svg>
+        </button>
       </div>
 
       <header className="dashboard-header">

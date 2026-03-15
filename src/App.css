@@ -1648,8 +1648,7 @@
 
 .donations-section-label {
   font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.85);
   margin: 16px 0 10px 0;
 }
@@ -1787,15 +1786,94 @@
   align-items: center;
   justify-content: center;
   padding: 20px 28px;
+  padding-right: 48px;
   background: linear-gradient(135deg, var(--fikr-forest) 0%, var(--fikr-mid) 100%);
   border-bottom: 1px solid rgba(201, 162, 39, 0.2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, padding 0.2s ease;
+}
+
+.zakat-sticky-bar.minimized {
+  padding: 8px 12px;
+}
+
+.zakat-sticky-bar.minimized .zakat-sticky-bar-inner {
+  display: none;
+}
+
+.zakat-sticky-bar.minimized .zakat-sticky-bar-minimize {
+  position: static;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .zakat-sticky-bar.hidden {
   transform: translateY(-100%);
   pointer-events: none;
+}
+
+.zakat-sticky-bar-minimize {
+  position: absolute;
+  bottom: 6px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.zakat-sticky-bar-minimize:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.zakat-sticky-bar.minimized {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.zakat-sticky-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.zakat-sticky-bar-logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.zakat-sticky-bar-logo {
+  height: 24px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.95;
+}
+
+.zakat-sticky-bar-logo:hover {
+  opacity: 1;
+}
+
+.zakat-sticky-bar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .zakat-sticky-bar-inner {
@@ -1902,6 +1980,31 @@
 @media (max-width: 600px) {
   .zakat-sticky-bar {
     padding: 16px 18px;
+    padding-right: 46px;
+  }
+
+  .zakat-sticky-bar.minimized {
+    padding: 8px 12px;
+  }
+
+  .zakat-sticky-bar-logo {
+    height: 20px;
+  }
+
+  .zakat-sticky-bar-title {
+    font-size: 12px;
+  }
+
+  .zakat-sticky-bar-minimize {
+    bottom: 4px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .zakat-sticky-bar-minimize svg {
+    width: 14px;
+    height: 14px;
   }
 
   .zakat-sticky-bar-inner {
