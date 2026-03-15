@@ -1894,31 +1894,22 @@
   flex: 1;
   min-width: 0;
   align-items: baseline;
-  justify-items: start;
-}
-
-.zakat-sticky-bar-content .zakat-sticky-bar-label:nth-child(2),
-.zakat-sticky-bar-content .zakat-sticky-bar-amount:nth-child(5) {
-  justify-self: center;
-}
-
-.zakat-sticky-bar-content .zakat-sticky-bar-label:nth-child(3) {
-  justify-self: end;
+  justify-items: center;
 }
 
 .zakat-sticky-bar-amount-cell {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 2px;
-  justify-self: end;
+  justify-self: center;
 }
 
 .zakat-sticky-bar-amount-cell-full {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-self: end;
+  align-items: center;
+  justify-self: center;
 }
 
 .zakat-sticky-bar-label {
