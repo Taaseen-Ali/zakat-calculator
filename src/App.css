@@ -1082,8 +1082,8 @@
   gap: 12px;
   margin: 0 0 14px 0;
   padding: 14px 16px;
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.55;
   color: #d8e4e0;
   background: rgba(45, 107, 82, 0.2);
   border-left: 3px solid var(--fikr-accent);
@@ -1117,7 +1117,7 @@
 .section-help--compact {
   margin: 6px 0 8px 0;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .section-help--compact .section-help-hide {
@@ -1195,8 +1195,8 @@
   min-width: 260px;
   max-width: 320px;
   padding: 14px 18px;
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.55;
   color: #f0f5f3;
   background: #1e2824;
   border: 1px solid rgba(45, 107, 82, 0.5);
@@ -1700,7 +1700,7 @@
 }
 
 .donations-card-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
 }
@@ -1729,7 +1729,7 @@
 }
 
 .donations-card-arrow {
-  font-size: 1rem;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
   margin-left: 12px;
