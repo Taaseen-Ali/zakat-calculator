@@ -88,7 +88,7 @@
   font-weight: 500;
   color: var(--text-muted);
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(201, 162, 39, 0.3);
   border-radius: var(--radius-sm);
   padding: 8px 16px;
   cursor: pointer;
@@ -96,9 +96,9 @@
 }
 
 .btn-clear-form:hover {
-  color: var(--text);
-  border-color: var(--fikr-accent);
-  background: rgba(45, 107, 82, 0.08);
+  color: var(--fikr-gold-light);
+  border-color: var(--fikr-gold);
+  background: var(--fikr-glow);
 }
 
 .prices-pill {
@@ -408,7 +408,9 @@
 }
 
 .btn-pdf:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(201, 162, 39, 0.2);
+  border-color: var(--fikr-gold);
+  box-shadow: 0 0 12px var(--fikr-glow);
 }
 
 /* Collapsible calculation */
@@ -1332,16 +1334,17 @@
   padding: 12px 14px;
   font-size: 15px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(201, 162, 39, 0.25);
   border-radius: var(--radius-sm);
   color: var(--text);
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .card-field input:focus,
 .card-field select:focus {
   outline: none;
-  border-color: var(--fikr-accent);
+  border-color: var(--fikr-gold);
+  box-shadow: 0 0 0 2px var(--fikr-glow);
 }
 
 .card-field .input-wrap {
@@ -1422,7 +1425,7 @@
 }
 
 .autocomplete-item:hover {
-  background: rgba(45, 107, 82, 0.12);
+  background: rgba(201, 162, 39, 0.12);
 }
 
 .autocomplete-item-symbol {
@@ -1470,7 +1473,7 @@
   font-size: 16px;
   color: var(--text-muted);
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(201, 162, 39, 0.3);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s;
@@ -1478,8 +1481,8 @@
 }
 
 .btn-refresh:hover:not(:disabled) {
-  color: var(--fikr-accent);
-  border-color: var(--fikr-accent);
+  color: var(--fikr-gold);
+  border-color: var(--fikr-gold);
 }
 
 .btn-refresh:disabled {
@@ -1642,7 +1645,7 @@
 
 .card-pill button:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(201, 162, 39, 0.15);
 }
 
 .card-pill button.active {
@@ -1688,17 +1691,17 @@
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--fikr-accent);
+  color: var(--fikr-gold);
   background: transparent;
-  border: 1px dashed var(--border);
+  border: 1px dashed rgba(201, 162, 39, 0.4);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .add-more:hover {
-  border-color: var(--fikr-accent);
-  background: rgba(45, 107, 82, 0.08);
+  border-color: var(--fikr-gold);
+  background: var(--fikr-glow);
 }
 
 /* Donations section — card layout inspired by zakat calculator example */

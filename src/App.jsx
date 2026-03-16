@@ -364,7 +364,7 @@ export default function App() {
             <div className="nisab-selector">
               <div className="nisab-selector-header">
                 <span className="nisab-selector-label">Nisab threshold</span>
-                <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g)." />
+                <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g). Jurists give fatwa on the silver niṣāb because it is more beneficial for the needy (anfaʿ li-l-fuqarā)." />
               </div>
               <div className="nisab-pill">
                 <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('gold'); }}>Gold 87.48g</button>
