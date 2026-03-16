@@ -184,7 +184,7 @@ function SectionHelp({ text, compact }) {
 }
 
 export default function App() {
-  const [theme, setTheme] = useLocalState('fikr-theme', 'dark')
+  const [theme, setTheme] = useLocalState('fikr-theme', 'light')
   const [nisabStandard, setNisabStandard] = useLocalState('fikr-nisab', 'gold')
   const [formData, setFormData] = useLocalState('fikr-formData', defaultFormData, migrateFormData)
 
