@@ -161,7 +161,7 @@ function HideSensitiveSwitch({ checked, onChange, className = '' }) {
 }
 
 function SectionHelp({ text, compact }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   if (!text) return null
   if (expanded) {
     return (
