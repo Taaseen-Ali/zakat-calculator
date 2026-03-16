@@ -1132,7 +1132,7 @@
   gap: 4px;
 }
 
-/* Section help — visible by default, dismissible */
+/* Section help — hidden by default, dismissible */
 .section-help {
   display: flex;
   align-items: flex-start;
@@ -1140,7 +1140,7 @@
   gap: 12px;
   margin: 0 0 14px 0;
   padding: 14px 16px;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.55;
   color: #d8e4e0;
   background: rgba(45, 107, 82, 0.2);
@@ -1175,11 +1175,11 @@
 .section-help--compact {
   margin: 6px 0 8px 0;
   padding: 10px 12px;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .section-help--compact .section-help-hide {
-  font-size: 11px;
+  font-size: 10px;
   padding: 2px 6px;
 }
 
@@ -1199,8 +1199,29 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
+.section-help-show-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 8px 0;
+}
+
+.section-help-show-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--fikr-accent);
+  background: rgba(45, 107, 82, 0.25);
+  border: none;
+  border-radius: 50%;
+}
+
 .section-help-show {
-  margin: 0 0 10px 0;
+  margin: 0;
   padding: 0;
   font-size: 13px;
   font-weight: 500;
@@ -1215,6 +1236,11 @@
 
 .section-help-show:hover {
   color: var(--fikr-gold);
+}
+
+.dashboard-result .section-help-show-icon {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .dashboard-result .section-help-show {

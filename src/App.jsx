@@ -161,7 +161,7 @@ function HideSensitiveSwitch({ checked, onChange, className = '' }) {
 }
 
 function SectionHelp({ text, compact }) {
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
   if (!text) return null
   if (expanded) {
     return (
@@ -174,9 +174,12 @@ function SectionHelp({ text, compact }) {
     )
   }
   return (
-    <button type="button" className="section-help-show" onClick={() => setExpanded(true)}>
-      Show explanation
-    </button>
+    <span className="section-help-show-wrap">
+      <span className="section-help-show-icon" aria-hidden>?</span>
+      <button type="button" className="section-help-show" onClick={() => setExpanded(true)}>
+        Show explanation
+      </button>
+    </span>
   )
 }
 
@@ -709,18 +712,18 @@ export default function App() {
         <div className="donations-header">
           <h2 className="donations-title">Where to Give</h2>
         </div>
-        <p className="donations-intro">We gratefully accept general donations to support our mission.</p>
+        <p className="donations-intro">Organizations that accept zakat for distribution to eligible recipients.</p>
 
         <div className="donations-section-label">Support FIKR</div>
-        <a href="https://www.zeffy.com/en-US/donation-form/donate-for-our-new-projects-for-intellectual-revival" target="_blank" rel="noopener noreferrer" className="donations-card donations-card-fikr">
+        <a href="https://www.zeffy.com/en-US/donation-form/contribute-your-zakah-in-impactful-avenues" target="_blank" rel="noopener noreferrer" className="donations-card donations-card-fikr">
           <div>
-            <div className="donations-card-title">Donate to FIKR</div>
-            <div className="donations-card-desc">100% goes to our mission · Intellectual revival &amp; knowledge</div>
+            <div className="donations-card-title">Donate Zakat to FIKR</div>
+            <div className="donations-card-desc">100% goes to eligible needy students</div>
           </div>
           <span className="donations-card-arrow" aria-hidden>→</span>
         </a>
 
-        <div className="donations-section-label">Alternative reputable organizations run under the supervision of competent &apos;ulama that you may consider</div>
+        <div className="donations-section-label">Other reputable organizations that collect zakat, run under the supervision of competent &apos;ulama</div>
         <div className="donations-cards">
           <a href="https://www.thirdpillar.us/" target="_blank" rel="noopener noreferrer" className="donations-card">
             <div>
