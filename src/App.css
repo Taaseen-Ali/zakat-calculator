@@ -83,6 +83,27 @@
   opacity: 1;
 }
 
+.btn-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-theme-toggle:hover {
+  color: var(--fikr-gold);
+  border-color: rgba(201, 162, 39, 0.5);
+}
+
 .btn-clear-form {
   font-size: 15px;
   font-weight: 500;
@@ -657,6 +678,12 @@
   .btn-clear-form {
     font-size: 13px;
     padding: 6px 12px;
+  }
+
+  .btn-theme-toggle {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
   }
 
   .dashboard-title {
@@ -2233,4 +2260,136 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 2px;
+}
+
+/* ========== Light mode overrides ========== */
+[data-theme="light"] .header-logo {
+  filter: none;
+  opacity: 0.9;
+}
+
+/* Section help in form cards — use dark text on light background */
+[data-theme="light"] .section-help {
+  color: var(--text);
+}
+
+[data-theme="light"] .section-help .section-help-hide {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .section-help .section-help-hide:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .section-help-show {
+  color: var(--fikr-accent);
+}
+
+[data-theme="light"] .section-help-show-icon {
+  color: var(--fikr-accent);
+  background: rgba(45, 107, 82, 0.15);
+}
+
+/* Keep white text on green result card */
+[data-theme="light"] .dashboard-result .section-help,
+[data-theme="light"] .dashboard-result .section-help .section-help-hide,
+[data-theme="light"] .dashboard-result .section-help-show,
+[data-theme="light"] .dashboard-result .section-help-show-icon {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .dashboard-result .section-help .section-help-hide:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="light"] .dashboard-result .section-help-show:hover {
+  color: var(--fikr-gold-light);
+}
+
+[data-theme="light"] .dashboard-result {
+  background: linear-gradient(135deg, var(--fikr-forest) 0%, var(--fikr-mid) 100%);
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+[data-theme="light"] .nisab-selector-label,
+[data-theme="light"] .nisab-selector-desc {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .nisab-selector .nisab-pill {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] .nisab-selector .nisab-pill button {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .hide-sensitive-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .result-details,
+[data-theme="light"] .result-calculation-toggle,
+[data-theme="light"] .calc-section-title,
+[data-theme="light"] .calc-step-label,
+[data-theme="light"] .calc-step-value {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .result-calculation-body {
+  background: rgba(0, 0, 0, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] .calc-step:not(:last-child) {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] .info-tooltip-popover {
+  color: var(--text);
+  background: var(--bg-elevated);
+  border-color: rgba(45, 107, 82, 0.4);
+}
+
+[data-theme="light"] .card-remove:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .donations-section-label {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .donations-card:hover .donations-card-desc {
+  color: var(--text);
+}
+
+[data-theme="light"] .donations-card-fikr .donations-card-desc {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .donations-card-fikr:hover .donations-card-desc {
+  color: var(--text);
+}
+
+[data-theme="light"] .donations-card-arrow {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .donations-card-fikr .donations-card-arrow {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .donations-card:hover .donations-card-arrow {
+  color: var(--fikr-gold);
+}
+
+[data-theme="light"] .donations-card-fikr:hover .donations-card-arrow {
+  color: var(--fikr-gold);
+}
+
+[data-theme="light"] .zakat-sticky-bar {
+  background: linear-gradient(135deg, var(--fikr-forest) 0%, var(--fikr-mid) 100%);
 }

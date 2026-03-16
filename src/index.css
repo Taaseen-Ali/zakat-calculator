@@ -75,3 +75,26 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* Light mode */
+[data-theme="light"] {
+  --bg-base: #f2f6f4;
+  --bg-elevated: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-solid: #f8faf8;
+  --border: rgba(45, 107, 82, 0.35);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --text: #1a2320;
+  --text-muted: #5a6b63;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 40px rgba(201, 162, 39, 0.12);
+}
+
+[data-theme="light"] body {
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 107, 82, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(201, 162, 39, 0.05), transparent);
+  color: var(--text);
+}
