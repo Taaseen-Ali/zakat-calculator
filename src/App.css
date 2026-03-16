@@ -122,6 +122,10 @@
   background: var(--fikr-glow);
 }
 
+.btn-clear-form .btn-clear-short {
+  display: none;
+}
+
 .prices-pill {
   display: flex;
   align-items: center;
@@ -670,20 +674,33 @@
   .dashboard-meta {
     order: 2;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .btn-clear-form .btn-clear-full {
+    display: none;
+  }
+
+  .btn-clear-form .btn-clear-short {
+    display: inline;
   }
 
   .btn-clear-form {
-    font-size: 13px;
-    padding: 6px 12px;
+    font-size: 12px;
+    padding: 6px 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .btn-theme-toggle {
     width: 30px;
     min-width: 30px;
     height: 30px;
+    flex-shrink: 0;
   }
 
   .dashboard-title {
@@ -694,19 +711,24 @@
   }
 
   .prices-pill {
-    padding: 6px 10px;
-    gap: 8px;
-    flex-shrink: 0;
+    padding: 4px 8px 4px 10px;
+    gap: 6px;
+    flex-shrink: 1;
+    min-width: 0;
   }
 
   .prices-pill span {
-    padding: 4px 6px;
-    font-size: 11px;
+    padding: 2px 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .prices-pill button {
-    padding: 2px 6px;
-    font-size: 12px;
+    padding: 2px 4px;
+    font-size: 11px;
+    flex-shrink: 0;
   }
 
   .dashboard-result {
@@ -2325,6 +2347,31 @@
 
 [data-theme="light"] .nisab-selector .nisab-pill button {
   color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .nisab-selector .nisab-pill button.active {
+  background: rgba(201, 162, 39, 0.6);
+  color: #fff;
+}
+
+[data-theme="light"] .card-pill button.active {
+  background: rgba(45, 107, 82, 0.25);
+  color: var(--fikr-accent);
+}
+
+[data-theme="light"] .tab-btn.active {
+  background: rgba(45, 107, 82, 0.45);
+  color: #fff;
+}
+
+[data-theme="light"] .card-field select {
+  color: var(--text);
+  background-color: var(--bg-elevated);
+}
+
+[data-theme="light"] .card-field select option {
+  color: var(--text);
+  background: var(--bg-elevated);
 }
 
 [data-theme="light"] .hide-sensitive-label {

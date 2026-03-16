@@ -352,7 +352,8 @@ export default function App() {
             )}
           </button>
           <button type="button" className="btn-clear-form" onClick={() => { setFormData(defaultFormData); setZakatCalculated(false); }}>
-            Clear form
+            <span className="btn-clear-full">Clear form</span>
+            <span className="btn-clear-short">Clear</span>
           </button>
           <div className="prices-pill">
             <span>{pricesLoading ? '…' : (goldPrice != null ? `Gold $${goldPrice}/g` : 'Gold')}</span>
