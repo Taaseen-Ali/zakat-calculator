@@ -393,21 +393,19 @@
 .result-calc-link {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(201, 162, 39, 0.12);
-  border: 1px solid rgba(201, 162, 39, 0.35);
+  color: white;
+  background: var(--fikr-gold);
+  border: 1px solid var(--fikr-gold);
   border-radius: 5px;
   cursor: pointer;
   padding: 5px 12px;
-  transition: background 0.2s, color 0.2s;
-  animation: gold-border-pulse 2.5s ease-in-out infinite;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .result-calc-link:hover {
-  background: rgba(201, 162, 39, 0.2);
-  border-color: rgba(201, 162, 39, 0.5);
+  background: var(--fikr-gold-light);
+  border-color: var(--fikr-gold-light);
   color: white;
-  animation: none;
 }
 
 .result-details {
@@ -2068,22 +2066,20 @@
 .zakat-sticky-bar-calc {
   font-size: 11px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(201, 162, 39, 0.12);
-  border: 1px solid rgba(201, 162, 39, 0.35);
+  color: white;
+  background: var(--fikr-gold);
+  border: 1px solid var(--fikr-gold);
   border-radius: 5px;
   cursor: pointer;
   padding: 3px 8px;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
   white-space: nowrap;
-  animation: gold-border-pulse 2.5s ease-in-out infinite;
 }
 
 .zakat-sticky-bar-calc:hover {
-  background: rgba(201, 162, 39, 0.2);
-  border-color: rgba(201, 162, 39, 0.5);
+  background: var(--fikr-gold-light);
+  border-color: var(--fikr-gold-light);
   color: white;
-  animation: none;
 }
 
 .zakat-sticky-bar-see-calc {
