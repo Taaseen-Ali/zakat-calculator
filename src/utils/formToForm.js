@@ -1,8 +1,19 @@
 /**
  * Converts form state to the format expected by calculateZakat.
  * Form layout matches zakat-calculator-henna.vercel.app
+ * All currency amounts in formData are in the user's selected currency; we convert to USD for calculation.
  */
-export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, stateTaxRate) {
+function toUsd(amount, currency, rates) {
+  if (currency === 'USD' || !rates) return Number(amount) || 0
+  const rate = rates[currency]
+  if (!rate) return Number(amount) || 0
+  return (Number(amount) || 0) / rate
+}
+
+export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, stateTaxRate, currency = 'USD', exchangeRates = null) {
+  const rates = exchangeRates || { USD: 1 }
+  const usd = (val) => toUsd(val, currency, rates)
+
   const {
     goldGrams,
     silverGrams,
@@ -41,18 +52,18 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
     : []
 
   const cashList = (cashAndSavings != null && Number(cashAndSavings) > 0)
-    ? [{ amount: cashAndSavings, entryLabel: 'Cash' }]
+    ? [{ amount: usd(cashAndSavings), entryLabel: 'Cash' }]
     : []
 
   const stocksShortList = (stocksShortTerm != null && Number(stocksShortTerm) > 0)
-    ? [{ value: stocksShortTerm, entryLabel: 'Trading' }]
+    ? [{ value: usd(stocksShortTerm), entryLabel: 'Trading' }]
     : []
 
-  // Normalize cryptoList: each entry needs { name, value, entryLabel } — value = amount*price or value field
+  // Normalize cryptoList: each entry needs { name, value, entryLabel } — value = amount*price or value field (all in USD)
   const normalizedCryptoList = (cryptoList || []).map((c) => {
     const amount = Number(c.amount) || 0
-    const price = Number(c.price) || 0
-    const value = amount && price ? amount * price : (Number(c.value) || 0)
+    const price = usd(c.price)
+    const value = amount && price ? amount * price : usd(c.value)
     return {
       name: c.name || '',
       value,
@@ -65,8 +76,8 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
   const normalizedStocksLongTermList = (stocksLongTermList || []).map((t) => {
     const mode = t.stocksInputMode || 'per_share'
     const marketValue = mode === 'total'
-      ? (Number(t.value) || 0)
-      : (Number(t.shares) || 0) * (Number(t.pricePerShare) || 0)
+      ? usd(t.value)
+      : (Number(t.shares) || 0) * usd(t.pricePerShare)
     return {
       ticker: t.ticker || '',
       marketValue,
@@ -76,14 +87,31 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
   })
 
   const liabilityListsByType = {
-    credit_card: (creditCard != null && Number(creditCard) > 0) ? [{ amount: creditCard, entryLabel: 'Credit card' }] : [],
-    mortgage: (mortgageNextPrincipal != null && Number(mortgageNextPrincipal) > 0) ? [{ amount: mortgageNextPrincipal, entryLabel: 'Mortgage' }] : [],
-    personal_loan: (personalLoans != null && Number(personalLoans) > 0) ? [{ amount: personalLoans, entryLabel: 'Personal loans' }] : [],
-    money_owed: (moneyOwed != null && Number(moneyOwed) > 0) ? [{ amount: moneyOwed, entryLabel: 'Money owed' }] : [],
-    unpaid_taxes: (unpaidTaxesBills != null && Number(unpaidTaxesBills) > 0) ? [{ amount: unpaidTaxesBills, entryLabel: 'Unpaid taxes' }] : [],
-    unpaid_zakat: (unpaidZakatPrior != null && Number(unpaidZakatPrior) > 0) ? [{ amount: unpaidZakatPrior, entryLabel: 'Unpaid zakat' }] : [],
-    other: (otherLiabilities != null && Number(otherLiabilities) > 0) ? [{ amount: otherLiabilities, entryLabel: 'Other' }] : []
+    credit_card: (creditCard != null && Number(creditCard) > 0) ? [{ amount: usd(creditCard), entryLabel: 'Credit card' }] : [],
+    mortgage: (mortgageNextPrincipal != null && Number(mortgageNextPrincipal) > 0) ? [{ amount: usd(mortgageNextPrincipal), entryLabel: 'Mortgage' }] : [],
+    personal_loan: (personalLoans != null && Number(personalLoans) > 0) ? [{ amount: usd(personalLoans), entryLabel: 'Personal loans' }] : [],
+    money_owed: (moneyOwed != null && Number(moneyOwed) > 0) ? [{ amount: usd(moneyOwed), entryLabel: 'Money owed' }] : [],
+    unpaid_taxes: (unpaidTaxesBills != null && Number(unpaidTaxesBills) > 0) ? [{ amount: usd(unpaidTaxesBills), entryLabel: 'Unpaid taxes' }] : [],
+    unpaid_zakat: (unpaidZakatPrior != null && Number(unpaidZakatPrior) > 0) ? [{ amount: usd(unpaidZakatPrior), entryLabel: 'Unpaid zakat' }] : [],
+    other: (otherLiabilities != null && Number(otherLiabilities) > 0) ? [{ amount: usd(otherLiabilities), entryLabel: 'Other' }] : []
   }
+
+  const realEstateFlippingListUsd = (realEstateFlippingList || []).map((p) => ({
+    ...p,
+    marketValue: usd(p.marketValue),
+  }))
+  const rentalListUsd = (rentalList || []).map((r) => ({
+    ...r,
+    balance: usd(r.balance),
+  }))
+  const loansListUsd = (loansList || []).map((l) => ({
+    ...l,
+    amount: usd(l.amount),
+  }))
+  const retirementFundsListUsd = (retirementFundsList || []).map((f) => ({
+    ...f,
+    balance: usd(f.balance),
+  }))
 
   return {
     nisabStandard,
@@ -92,37 +120,37 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
     goldSilverList,
     goldPricePerGram: goldPrice,
     silverPricePerGram: silverPrice,
-    cashAndSavings: Number(cashAndSavings) || 0,
+    cashAndSavings: usd(cashAndSavings),
     cashList,
     stocksShortList,
     cryptoList: normalizedCryptoList,
-    stocksShortTerm: Number(stocksShortTerm) || 0,
+    stocksShortTerm: usd(stocksShortTerm),
     stocksLongTermList: normalizedStocksLongTermList,
     retirementMethod: retirementMethod || 'full',
-    retirementBalance: Number(retirementBalance) || 0,
-    retirementFundsList: retirementFundsList || [],
-    taxableIncome: taxableIncome ?? '',
-    grossIncome: grossIncome ?? '',
+    retirementBalance: usd(retirementBalance),
+    retirementFundsList: retirementFundsListUsd,
+    taxableIncome: taxableIncome !== '' && taxableIncome != null ? usd(taxableIncome) : '',
+    grossIncome: grossIncome !== '' && grossIncome != null ? usd(grossIncome) : '',
     useTaxableIncome: useTaxableIncome !== false,
     filingStatus: filingStatus || 'Single',
     stateName: stateName || 'New York',
     stateTaxRate: stateTaxRate ?? 0,
-    realEstateFlippingList: realEstateFlippingList || [],
-    rentalList: rentalList || [],
+    realEstateFlippingList: realEstateFlippingListUsd,
+    rentalList: rentalListUsd,
     businessSoleOwner: businessSoleOwner !== false,
     businessOwnershipPct: businessOwnershipPct ?? '',
-    businessCash: Number(businessCash) || 0,
-    businessInventory: Number(businessInventory) || 0,
-    businessReceivables: Number(businessReceivables) || 0,
-    businessLiabilities: Number(businessLiabilities) || 0,
-    loansList: loansList || [],
-    creditCard: Number(creditCard) || 0,
-    mortgageNextPrincipal: Number(mortgageNextPrincipal) || 0,
-    personalLoans: Number(personalLoans) || 0,
-    moneyOwed: Number(moneyOwed) || 0,
-    unpaidTaxesBills: Number(unpaidTaxesBills) || 0,
-    unpaidZakatPrior: Number(unpaidZakatPrior) || 0,
-    otherLiabilities: Number(otherLiabilities) || 0,
+    businessCash: usd(businessCash),
+    businessInventory: usd(businessInventory),
+    businessReceivables: usd(businessReceivables),
+    businessLiabilities: usd(businessLiabilities),
+    loansList: loansListUsd,
+    creditCard: usd(creditCard),
+    mortgageNextPrincipal: usd(mortgageNextPrincipal),
+    personalLoans: usd(personalLoans),
+    moneyOwed: usd(moneyOwed),
+    unpaidTaxesBills: usd(unpaidTaxesBills),
+    unpaidZakatPrior: usd(unpaidZakatPrior),
+    otherLiabilities: usd(otherLiabilities),
     liabilityListsByType
   }
 }

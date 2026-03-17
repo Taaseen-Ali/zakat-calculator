@@ -1,6 +1,33 @@
 import { jsPDF } from 'jspdf'
+import { convertFromUSD, getCurrencySymbol } from './exchangeRates'
 
 const fmt = (n) => (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+function formatAmount(usdAmount, currency, exchangeRates, options = {}) {
+  const { negative = false } = options
+  const amount = currency && exchangeRates ? convertFromUSD(usdAmount, currency, exchangeRates) : usdAmount
+  const sym = currency ? getCurrencySymbol(currency) : '$'
+  const formatted = fmt(Math.abs(amount))
+  if (amount < 0 || (negative && amount > 0)) return `-${sym}${formatted}`
+  return `${sym}${formatted}`
+}
+
+/** Draw amount right-aligned at xRight; symbol and number drawn separately so decimal points align across rows. */
+function drawAmount(doc, xRight, y, usdAmount, currency, exchangeRates, options = {}) {
+  const { negative = false } = options
+  const amount = currency && exchangeRates ? convertFromUSD(usdAmount, currency, exchangeRates) : usdAmount
+  const sym = currency ? getCurrencySymbol(currency) : '$'
+  const numStr = fmt(Math.abs(amount))
+  const prefix = amount < 0 || (negative && amount > 0) ? '-' : ''
+  const symbolStr = prefix + sym
+
+  const numW = doc.getTextWidth(numStr)
+  const symW = doc.getTextWidth(sanitize(symbolStr))
+  const gap = 2
+
+  doc.text(sanitize(symbolStr), xRight - numW - gap - symW, y)
+  doc.text(numStr, xRight, y, { align: 'right' })
+}
 
 // jsPDF's default font doesn't support Unicode; replace with ASCII to avoid garbled/monospace output
 function sanitize(str) {
@@ -24,12 +51,16 @@ function checkPageBreak(doc, y, needed = 15) {
 
 export function exportZakatReport(result, options = {}) {
   const doc = new jsPDF()
+  const { currency = 'USD', exchangeRates = null } = options
   const { totalZakatableAssets, totalLiabilities, netZakatableWealth, nisab, zakatDue, meetsNisab, assetBreakdownDetailed, liabilityBreakdownDetailed, assetBreakdown, liabilityBreakdown } = result
 
+  const amt = (usd) => formatAmount(usd, currency, exchangeRates)
   const assetSections = assetBreakdownDetailed?.length ? assetBreakdownDetailed : (assetBreakdown || []).filter((a) => a.value > 0).map((a) => ({ label: a.label, value: a.value, entries: [{ label: 'Total', value: a.value }] }))
   const liabilitySections = liabilityBreakdownDetailed?.length ? liabilityBreakdownDetailed : (liabilityBreakdown || []).filter((l) => l.value > 0).map((l) => ({ label: l.label, value: l.value, entries: [{ label: 'Total', value: l.value }] }))
 
   const pageW = doc.internal.pageSize.getWidth()
+  const xRight = pageW - margin
+  const draw = (yPos, usd, neg = false) => drawAmount(doc, xRight, yPos, usd, currency, exchangeRates, { negative: neg })
   let y = 20
 
   doc.setFontSize(22)
@@ -54,7 +85,7 @@ export function exportZakatReport(result, options = {}) {
 
   doc.setFontSize(28)
   doc.setTextColor(15, 45, 38)
-  doc.text(sanitize('$' + fmt(zakatDue)), margin, y)
+  doc.text(sanitize(amt(zakatDue)), margin, y)
   y += 18
 
   doc.setFontSize(11)
@@ -73,7 +104,7 @@ export function exportZakatReport(result, options = {}) {
     doc.setTextColor(50, 50, 50)
     doc.text(sanitize(section.label), margin + 4, y)
     doc.setTextColor(26, 26, 26)
-    doc.text(sanitize('$' + fmt(section.value)), pageW - margin, y, { align: 'right' })
+    draw(y, section.value)
     y += 6
 
     for (const entry of section.entries || []) {
@@ -82,7 +113,7 @@ export function exportZakatReport(result, options = {}) {
       doc.setTextColor(92, 92, 92)
       doc.text('  ' + sanitize(entry.label), margin + 8, y)
       doc.setTextColor(60, 60, 60)
-      doc.text(sanitize('$' + fmt(entry.value)), pageW - margin, y, { align: 'right' })
+      draw(y, entry.value)
       y += 5
 
       for (const step of entry.steps || []) {
@@ -91,8 +122,7 @@ export function exportZakatReport(result, options = {}) {
         doc.setTextColor(120, 120, 120)
         doc.text('    ' + sanitize(step.desc), margin + 12, y)
         doc.setTextColor(80, 80, 80)
-        const stepVal = step.value >= 0 ? '$' + fmt(step.value) : '-$' + fmt(Math.abs(step.value))
-        doc.text(sanitize(stepVal), pageW - margin, y, { align: 'right' })
+        draw(y, step.value, step.value < 0)
         y += 4
       }
     }
@@ -104,7 +134,7 @@ export function exportZakatReport(result, options = {}) {
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(50, 50, 50)
   doc.text(sanitize('Total zakatable assets'), margin + 4, y)
-  doc.text(sanitize('$' + fmt(totalZakatableAssets)), pageW - margin, y, { align: 'right' })
+  draw(y, totalZakatableAssets)
   doc.setFont('helvetica', 'normal')
   y += 12
 
@@ -119,7 +149,7 @@ export function exportZakatReport(result, options = {}) {
     doc.setTextColor(50, 50, 50)
     doc.text(sanitize(section.label), margin + 4, y)
     doc.setTextColor(26, 26, 26)
-    doc.text(sanitize('-$' + fmt(section.value)), pageW - margin, y, { align: 'right' })
+    draw(y, section.value, true)
     y += 6
 
     for (const entry of section.entries || []) {
@@ -128,7 +158,7 @@ export function exportZakatReport(result, options = {}) {
       doc.setTextColor(92, 92, 92)
       doc.text('  ' + sanitize(entry.label), margin + 8, y)
       doc.setTextColor(60, 60, 60)
-      doc.text(sanitize('-$' + fmt(entry.value)), pageW - margin, y, { align: 'right' })
+      draw(y, entry.value, true)
       y += 5
     }
     y += 2
@@ -139,7 +169,7 @@ export function exportZakatReport(result, options = {}) {
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(50, 50, 50)
   doc.text(sanitize('Total liabilities'), margin + 4, y)
-  doc.text(sanitize('-$' + fmt(totalLiabilities)), pageW - margin, y, { align: 'right' })
+  draw(y, totalLiabilities, true)
   doc.setFont('helvetica', 'normal')
   y += 14
 
@@ -148,7 +178,7 @@ export function exportZakatReport(result, options = {}) {
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(15, 45, 38)
   doc.text(sanitize('Net zakatable wealth'), margin, y)
-  doc.text(sanitize('$' + fmt(netZakatableWealth)), pageW - margin, y, { align: 'right' })
+  draw(y, netZakatableWealth)
   doc.setFont('helvetica', 'normal')
   y += 8
 
@@ -156,7 +186,7 @@ export function exportZakatReport(result, options = {}) {
   doc.setTextColor(92, 92, 92)
   doc.text(sanitize('Nisab threshold'), margin, y)
   doc.setTextColor(26, 26, 26)
-  doc.text(sanitize('$' + fmt(nisab)), pageW - margin, y, { align: 'right' })
+  draw(y, nisab)
   y += 8
 
   doc.text(sanitize('Zakat rate'), margin, y)

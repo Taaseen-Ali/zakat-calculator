@@ -4,10 +4,12 @@ import { calculateZakat } from './utils/zakatCalculations'
 import { STATE_TAX_RATES, STATES } from './utils/stateTaxRates'
 import { formDataToForm, defaultFormData } from './utils/formToForm'
 import { fetchMetalPrices } from './utils/metalPrices'
+import { fetchExchangeRates, CURRENCIES, convertFromUSD, getCurrencySymbol, formatCurrency } from './utils/exchangeRates'
 import { exportZakatReport } from './utils/exportPdf'
 import { fetchCryptoPrices } from './utils/cryptoApi'
 import { TickerAutocomplete } from './components/TickerAutocomplete'
 import { CryptoAutocomplete } from './components/CryptoAutocomplete'
+import { CurrencyAmount } from './components/CurrencyAmount'
 import './App.css'
 
 function useLocalState(key, initial, migrate) {
@@ -63,20 +65,24 @@ function FormSection({ title, subtitle, defaultOpen = true, children }) {
   )
 }
 
-function InputRow({ label, prefix, value, onChange, placeholder, type = 'number' }) {
+function InputRow({ label, prefix, value, onChange, placeholder, type = 'number', currency, exchangeRates, readOnly }) {
   const isNum = type === 'number'
+  const isCurrency = prefix && currency && exchangeRates
+  const prefixDisplay = isCurrency ? getCurrencySymbol(currency) : prefix
+  const step = isCurrency ? 0.01 : (prefix ? 0.01 : 'any')
   return (
     <div className="card-field">
       <label>{label}</label>
-      <div className="input-wrap">
-        {prefix && <span className="prefix">{prefix}</span>}
+      <div className="input-wrap" data-prefix-len={prefixDisplay ? prefixDisplay.length : 0}>
+        {prefixDisplay && <span className="prefix">{prefixDisplay}</span>}
         <input
           type={type}
-          className={`input ${prefix ? 'has-prefix' : ''}`}
+          className={`input ${prefixDisplay ? 'has-prefix' : ''}`}
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          {...(isNum && { min: 0, step: prefix ? 0.01 : 'any', inputMode: prefix ? 'decimal' : 'numeric' })}
+          readOnly={readOnly}
+          {...(isNum && { min: 0, step, inputMode: prefixDisplay ? 'decimal' : 'numeric' })}
         />
       </div>
     </div>
@@ -185,6 +191,8 @@ function SectionHelp({ text, compact }) {
 
 export default function App() {
   const [theme, setTheme] = useLocalState('fikr-theme', 'light')
+  const [currency, setCurrency] = useLocalState('fikr-currency', 'USD')
+  const [exchangeRates, setExchangeRates] = useState(null)
   const [nisabStandard, setNisabStandard] = useLocalState('fikr-nisab', 'gold')
   const [formData, setFormData] = useLocalState('fikr-formData', defaultFormData, migrateFormData)
 
@@ -198,10 +206,14 @@ export default function App() {
   useEffect(() => {
     let cancelled = false
     async function load() {
-      const { gold, silver } = await fetchMetalPrices()
+      const [metalRes, ratesRes] = await Promise.all([
+        fetchMetalPrices(),
+        fetchExchangeRates(),
+      ])
       if (cancelled) return
-      setLiveGold(gold)
-      setLiveSilver(silver)
+      setLiveGold(metalRes.gold)
+      setLiveSilver(metalRes.silver)
+      setExchangeRates(ratesRes)
       setPricesLoading(false)
     }
     load()
@@ -210,16 +222,20 @@ export default function App() {
 
   async function refreshMetalPrices() {
     setPricesLoading(true)
-    const { gold, silver } = await fetchMetalPrices()
-    setLiveGold(gold)
-    setLiveSilver(silver)
+    const [metalRes, ratesRes] = await Promise.all([
+      fetchMetalPrices(),
+      fetchExchangeRates(true),
+    ])
+    setLiveGold(metalRes.gold)
+    setLiveSilver(metalRes.silver)
+    setExchangeRates(ratesRes)
     setPricesLoading(false)
   }
 
   const goldPrice = liveGold
   const silverPrice = liveSilver
 
-  const form = formDataToForm(formData, nisabStandard, goldPrice, silverPrice, STATE_TAX_RATES[formData.stateName] ?? 0)
+  const form = formDataToForm(formData, nisabStandard, goldPrice, silverPrice, STATE_TAX_RATES[formData.stateName] ?? 0, currency, exchangeRates)
   const result = calculateZakat(form)
 
 
@@ -230,6 +246,9 @@ export default function App() {
   const [hideSensitiveNumbers, setHideSensitiveNumbers] = useLocalState('fikr-hideSensitive', false)
   const resultRef = useRef(null)
 
+  const currencyProps = { currency, exchangeRates, hideSensitiveNumbers }
+  const curr = exchangeRates && exchangeRates[currency] ? currency : 'USD'
+  const priceFmt = (usd) => hideSensitiveNumbers ? 'XXX' : `${getCurrencySymbol(curr)}${formatCurrency(convertFromUSD(usd ?? 0, curr, exchangeRates || { USD: 1 }), curr, 2)}`
   const fmt = (n, dec = 0) => hideSensitiveNumbers ? 'XXX' : (typeof n === 'number' ? n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : '')
 
   const updateFormWithReset = (updates) => {
@@ -289,11 +308,11 @@ export default function App() {
             <span className="zakat-sticky-bar-label">Assets</span>
             <span className="zakat-sticky-bar-label">Liabilities</span>
             <span className="zakat-sticky-bar-label">Zakat due</span>
-            <span className="zakat-sticky-bar-amount">${fmt(result.totalZakatableAssets)}</span>
-            <span className="zakat-sticky-bar-amount">${fmt(result.totalLiabilities)}</span>
+            <span className="zakat-sticky-bar-amount"><CurrencyAmount usdAmount={result.totalZakatableAssets} {...currencyProps} /></span>
+            <span className="zakat-sticky-bar-amount"><CurrencyAmount usdAmount={result.totalLiabilities} negative {...currencyProps} /></span>
             {zakatCalculated ? (
               <div className="zakat-sticky-bar-amount-cell">
-                <span className="zakat-sticky-bar-amount">${fmt(result.zakatDue, 2)}</span>
+                <span className="zakat-sticky-bar-amount"><CurrencyAmount usdAmount={result.zakatDue} dec={2} {...currencyProps} /></span>
               <button
                 type="button"
                 className="zakat-sticky-bar-see-calc"
@@ -356,9 +375,22 @@ export default function App() {
             <span className="btn-clear-short">Clear</span>
           </button>
           <div className="prices-pill">
-            <span>{pricesLoading ? '…' : (goldPrice != null ? `Gold $${goldPrice}/g` : 'Gold')}</span>
-            <span>{pricesLoading ? '…' : (silverPrice != null ? `Silver $${silverPrice}/g` : 'Silver')}</span>
+            <span>{pricesLoading ? '…' : (goldPrice != null ? `Gold ${priceFmt(goldPrice)}/g` : 'Gold')}</span>
+            <span>{pricesLoading ? '…' : (silverPrice != null ? `Silver ${priceFmt(silverPrice)}/g` : 'Silver')}</span>
             <button type="button" onClick={refreshMetalPrices} disabled={pricesLoading} title="Refresh gold & silver prices">↻</button>
+          </div>
+          <div className="currency-selector-wrap">
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="currency-select"
+              aria-label="Display currency"
+              title="Display currency (rates via Frankfurter)"
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>
+              ))}
+            </select>
           </div>
         </div>
       </header>
@@ -368,7 +400,7 @@ export default function App() {
           <div className="result-main">
             <span className="result-label">Zakat due</span>
             {zakatCalculated ? (
-              <span className="result-amount">${fmt(result.zakatDue, 2)}</span>
+              <span className="result-amount"><CurrencyAmount usdAmount={result.zakatDue} dec={2} {...currencyProps} /></span>
             ) : (
               <button type="button" className="result-calc-link" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
             )}
@@ -387,15 +419,15 @@ export default function App() {
           </div>
         </div>
         <div className="result-details">
-          <span>Assets ${fmt(result.totalZakatableAssets)}</span>
-          <span>− Liabilities ${fmt(result.totalLiabilities)}</span>
-          <span>Nisab ${fmt(result.nisab)}</span>
+          <span>Assets <CurrencyAmount usdAmount={result.totalZakatableAssets} {...currencyProps} /></span>
+          <span>− Liabilities <CurrencyAmount usdAmount={result.totalLiabilities} {...currencyProps} /></span>
+          <span>Nisab <CurrencyAmount usdAmount={result.nisab} {...currencyProps} /></span>
         </div>
         <div className="result-bottom-right">
           <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} />
         </div>
         {zakatCalculated && (
-          <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result)}>Download PDF</button>
+          <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result, { currency, exchangeRates })}>Download PDF</button>
         )}
         {zakatCalculated && (
         <div className="result-calculation">
@@ -416,18 +448,18 @@ export default function App() {
                   <div key={section.type || section.label} className="calc-section-sub">
                     <div className="calc-step calc-step-sub calc-step-section">
                       <span className="calc-step-label">{section.label}</span>
-                      <span className="calc-step-value">${fmt(section.value, 2)}</span>
+                      <span className="calc-step-value"><CurrencyAmount usdAmount={section.value} dec={2} {...currencyProps} /></span>
                     </div>
                     {section.entries?.map((entry, i) => (
                       <div key={i} className="calc-entry-detail">
                         <div className="calc-step calc-step-entry">
                           <span className="calc-step-label">{entry.label}</span>
-                          <span className="calc-step-value">${fmt(entry.value, 2)}</span>
+                          <span className="calc-step-value"><CurrencyAmount usdAmount={entry.value} dec={2} {...currencyProps} /></span>
                         </div>
                         {entry.steps?.map((step, j) => (
                           <div key={j} className="calc-step calc-step-mini">
                             <span className="calc-step-label">{step.desc}</span>
-                            <span className="calc-step-value">{step.value >= 0 ? '$' : '−$'}{fmt(Math.abs(step.value), 2)}</span>
+                            <span className="calc-step-value"><CurrencyAmount usdAmount={step.value} dec={2} signed {...currencyProps} /></span>
                           </div>
                         ))}
                       </div>
@@ -436,7 +468,7 @@ export default function App() {
                 ))}
                 <div className="calc-step calc-step-total">
                   <span className="calc-step-label">Total zakatable assets</span>
-                  <span className="calc-step-value">${fmt(result.totalZakatableAssets, 2)}</span>
+                  <span className="calc-step-value"><CurrencyAmount usdAmount={result.totalZakatableAssets} dec={2} {...currencyProps} /></span>
                 </div>
               </div>
               <div className="calc-section">
@@ -445,28 +477,28 @@ export default function App() {
                   <div key={idx} className="calc-section-sub">
                     <div className="calc-step calc-step-sub calc-step-section">
                       <span className="calc-step-label">{section.label}</span>
-                      <span className="calc-step-value">−${fmt(section.value, 2)}</span>
+                      <span className="calc-step-value"><CurrencyAmount usdAmount={section.value} dec={2} negative {...currencyProps} /></span>
                     </div>
                     {section.entries?.map((entry, i) => (
                       <div key={i} className="calc-step calc-step-entry">
                         <span className="calc-step-label">{entry.label}</span>
-                        <span className="calc-step-value">−${fmt(entry.value, 2)}</span>
+                        <span className="calc-step-value"><CurrencyAmount usdAmount={entry.value} dec={2} negative {...currencyProps} /></span>
                       </div>
                     ))}
                   </div>
                 ))}
                 <div className="calc-step calc-step-total">
                   <span className="calc-step-label">Total liabilities</span>
-                  <span className="calc-step-value">−${fmt(result.totalLiabilities, 2)}</span>
+                  <span className="calc-step-value"><CurrencyAmount usdAmount={result.totalLiabilities} dec={2} negative {...currencyProps} /></span>
                 </div>
               </div>
               <div className="calc-step calc-step-equals">
                 <span className="calc-step-label">Net zakatable wealth</span>
-                <span className="calc-step-value">${fmt(result.netZakatableWealth, 2)}</span>
+                <span className="calc-step-value"><CurrencyAmount usdAmount={result.netZakatableWealth} dec={2} {...currencyProps} /></span>
               </div>
               <div className="calc-step">
                 <span className="calc-step-label">Nisab threshold</span>
-                <span className="calc-step-value">${fmt(result.nisab, 2)}</span>
+                <span className="calc-step-value"><CurrencyAmount usdAmount={result.nisab} dec={2} {...currencyProps} /></span>
               </div>
               {result.meetsNisab ? (
                 <div className="calc-step calc-step-result">
@@ -474,12 +506,12 @@ export default function App() {
                     <span className="calc-step-label">Zakat due</span>
                     <span className="calc-step-label-sub">(2.5% of net wealth)</span>
                   </div>
-                  <span className="calc-step-value">${fmt(result.zakatDue, 2)}</span>
+                  <span className="calc-step-value"><CurrencyAmount usdAmount={result.zakatDue} dec={2} {...currencyProps} /></span>
                 </div>
               ) : (
                 <div className="calc-step calc-step-result">
                   <span className="calc-step-label">Net wealth below nisab. No zakat due.</span>
-                  <span className="calc-step-value">{hideSensitiveNumbers ? '$XXX' : '$0.00'}</span>
+                  <span className="calc-step-value"><CurrencyAmount usdAmount={0} dec={2} {...currencyProps} /></span>
                 </div>
               )}
             </div>
@@ -499,9 +531,9 @@ export default function App() {
               <InputRow label="Gold owned (grams)" value={formData.goldGrams} onChange={(v) => updateFormWithReset({ goldGrams: v })} placeholder="e.g. 50" />
               <div className="card-field">
                 <label>Gold price / gram</label>
-                <div className="input-wrap">
-                  <span className="prefix">$</span>
-                  <input type="number" className="input has-prefix" value={goldPrice ?? ''} readOnly placeholder="Loads on page load" />
+                <div className="input-wrap" data-prefix-len={(getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')).length}>
+                  <span className="prefix">{getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')}</span>
+                  <input type="number" className="input has-prefix" value={goldPrice != null ? (Math.round(convertFromUSD(goldPrice, currency, exchangeRates || { USD: 1 }) * 100) / 100) : ''} readOnly placeholder="Loads on page load" />
                 </div>
               </div>
             </div>
@@ -509,9 +541,9 @@ export default function App() {
               <InputRow label="Silver owned (grams)" value={formData.silverGrams} onChange={(v) => updateFormWithReset({ silverGrams: v })} placeholder="e.g. 200" />
               <div className="card-field">
                 <label>Silver price / gram</label>
-                <div className="input-wrap">
-                  <span className="prefix">$</span>
-                  <input type="number" className="input has-prefix" value={silverPrice ?? ''} readOnly placeholder="Loads on page load" />
+                <div className="input-wrap" data-prefix-len={(getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')).length}>
+                  <span className="prefix">{getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')}</span>
+                  <input type="number" className="input has-prefix" value={silverPrice != null ? (Math.round(convertFromUSD(silverPrice, currency, exchangeRates || { USD: 1 }) * 100) / 100) : ''} readOnly placeholder="Loads on page load" />
                 </div>
               </div>
             </div>
@@ -522,7 +554,7 @@ export default function App() {
               <span>Cash & Savings</span>
             </div>
             <SectionHelp text="Add up everything in your bank: checking, savings, and cash at home. We take 2.5% of that total." />
-            <InputRow label="Cash and bank savings" prefix="$" value={formData.cashAndSavings} onChange={(v) => updateFormWithReset({ cashAndSavings: v })} placeholder="e.g. 10000" />
+            <InputRow label="Cash and bank savings" prefix="$" value={formData.cashAndSavings} onChange={(v) => updateFormWithReset({ cashAndSavings: v })} placeholder="e.g. 10000" currency={currency} exchangeRates={exchangeRates} />
           </div>
 
           <div className="form-subsection">
@@ -531,7 +563,7 @@ export default function App() {
             </div>
             <SectionHelp text="Crypto is treated like a commodity, not like money. If you're holding it to trade (buy and sell soon), it counts. If you're holding it long-term, it doesn't." />
             {(formData.cryptoList || []).map((c, i) => (
-              <CryptoFormRow key={c.id || i} entry={c} onUpdate={(d) => updateCrypto(i, d)} onRemove={() => removeCrypto(i)} />
+              <CryptoFormRow key={c.id || i} entry={c} onUpdate={(d) => updateCrypto(i, d)} onRemove={() => removeCrypto(i)} currency={currency} exchangeRates={exchangeRates} />
             ))}
             <button type="button" className="add-more" onClick={addCrypto}>+ Add Coin</button>
           </div>
@@ -543,12 +575,12 @@ export default function App() {
             <SectionHelp text="Stocks you trade: we count the full value. Stocks you hold for years: we estimate what part of each company is actually cash-like (we use 30% if we don't know). Then 2.5% of that." />
             <div className="form-subsubsection">
               <span className="form-subsubsection-label">Short-Term / Trading</span>
-              <InputRow label="Total market value" prefix="$" value={formData.stocksShortTerm} onChange={(v) => updateFormWithReset({ stocksShortTerm: v })} placeholder="e.g. 15000" />
+              <InputRow label="Total market value" prefix="$" value={formData.stocksShortTerm} onChange={(v) => updateFormWithReset({ stocksShortTerm: v })} placeholder="e.g. 15000" currency={currency} exchangeRates={exchangeRates} />
             </div>
             <div className="form-subsubsection">
               <span className="form-subsubsection-label">Long-Term Holdings</span>
               {(formData.stocksLongTermList || []).map((t, i) => (
-                <StocksLongFormRow key={t.id || i} entry={t} onUpdate={(d) => updateStocksLong(i, d)} onRemove={() => removeStocksLong(i)} />
+                <StocksLongFormRow key={t.id || i} entry={t} onUpdate={(d) => updateStocksLong(i, d)} onRemove={() => removeStocksLong(i)} currency={currency} exchangeRates={exchangeRates} />
               ))}
               <button type="button" className="add-more" onClick={addStocksLong}>+ Add Long-Term Stock</button>
             </div>
@@ -568,10 +600,10 @@ export default function App() {
               </div>
             </div>
             {(formData.retirementMethod || 'full') === 'full' ? (
-              <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} />
+              <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} currency={currency} exchangeRates={exchangeRates} />
             ) : (formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1') ? (
               <>
-                <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} />
+                <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} currency={currency} exchangeRates={exchangeRates} />
                 <div className="card-field">
                   <label>How would you like to enter your income?</label>
                   <div className="card-pill">
@@ -596,9 +628,9 @@ export default function App() {
                   </div>
                 </div>
                 {formData.useTaxableIncome ? (
-                  <InputRow label="Taxable Income (Line 15)" prefix="$" value={formData.taxableIncome} onChange={(v) => updateFormWithReset({ taxableIncome: v })} />
+                  <InputRow label="Taxable Income (Line 15)" prefix="$" value={formData.taxableIncome} onChange={(v) => updateFormWithReset({ taxableIncome: v })} currency={currency} exchangeRates={exchangeRates} />
                 ) : (
-                  <InputRow label="Estimated gross annual income" prefix="$" value={formData.grossIncome} onChange={(v) => updateFormWithReset({ grossIncome: v })} />
+                  <InputRow label="Estimated gross annual income" prefix="$" value={formData.grossIncome} onChange={(v) => updateFormWithReset({ grossIncome: v })} currency={currency} exchangeRates={exchangeRates} />
                 )}
               </>
             ) : (
@@ -613,7 +645,7 @@ export default function App() {
                       <label>Ticker</label>
                       <TickerAutocomplete value={f.ticker} onChange={(v) => updateRetirementFund(i, { ticker: v })} placeholder="e.g. VOO" />
                     </div>
-                    <InputRow label="Balance" prefix="$" value={f.balance} onChange={(v) => updateRetirementFund(i, { balance: v })} />
+                    <InputRow label="Balance" prefix="$" value={f.balance} onChange={(v) => updateRetirementFund(i, { balance: v })} currency={currency} exchangeRates={exchangeRates} />
                     <InputRow label="Zakatable fraction (0–1)" value={f.zakatableFraction} onChange={(v) => updateRetirementFund(i, { zakatableFraction: parseFloat(v) || 0.3 })} placeholder="0.3" />
                   </div>
                 ))}
@@ -636,7 +668,7 @@ export default function App() {
                   <button type="button" className="card-remove" onClick={() => removeRealEstate(i)} aria-label="Remove">×</button>
                 </div>
                 <InputRow label="Property" type="text" value={p.name} onChange={(v) => updateRealEstate(i, { name: v })} placeholder="e.g. 123 Main St" />
-                <InputRow label="Market value" prefix="$" value={p.marketValue} onChange={(v) => updateRealEstate(i, { marketValue: v })} />
+                <InputRow label="Market value" prefix="$" value={p.marketValue} onChange={(v) => updateRealEstate(i, { marketValue: v })} currency={currency} exchangeRates={exchangeRates} />
               </div>
             ))}
             <button type="button" className="add-more" onClick={addRealEstate}>+ Add Property</button>
@@ -654,7 +686,7 @@ export default function App() {
                   <button type="button" className="card-remove" onClick={() => removeRental(i)} aria-label="Remove">×</button>
                 </div>
                 <InputRow label="Property" type="text" value={r.name} onChange={(v) => updateRental(i, { name: v })} placeholder="e.g. Rental A" />
-                <InputRow label="Account balance" prefix="$" value={r.balance} onChange={(v) => updateRental(i, { balance: v })} />
+                <InputRow label="Account balance" prefix="$" value={r.balance} onChange={(v) => updateRental(i, { balance: v })} currency={currency} exchangeRates={exchangeRates} />
               </div>
             ))}
             <button type="button" className="add-more" onClick={addRental}>+ Add Rental Property</button>
@@ -675,10 +707,10 @@ export default function App() {
             {!formData.businessSoleOwner && (
               <InputRow label="Ownership %" value={formData.businessOwnershipPct} onChange={(v) => updateFormWithReset({ businessOwnershipPct: v })} placeholder="e.g. 40" />
             )}
-            <InputRow label="Business cash" prefix="$" value={formData.businessCash} onChange={(v) => updateFormWithReset({ businessCash: v })} />
-            <InputRow label="Inventory" prefix="$" value={formData.businessInventory} onChange={(v) => updateFormWithReset({ businessInventory: v })} />
-            <InputRow label="Receivables" prefix="$" value={formData.businessReceivables} onChange={(v) => updateFormWithReset({ businessReceivables: v })} />
-            <InputRow label="Business liabilities" prefix="$" value={formData.businessLiabilities} onChange={(v) => updateFormWithReset({ businessLiabilities: v })} />
+            <InputRow label="Business cash" prefix="$" value={formData.businessCash} onChange={(v) => updateFormWithReset({ businessCash: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Inventory" prefix="$" value={formData.businessInventory} onChange={(v) => updateFormWithReset({ businessInventory: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Receivables" prefix="$" value={formData.businessReceivables} onChange={(v) => updateFormWithReset({ businessReceivables: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Business liabilities" prefix="$" value={formData.businessLiabilities} onChange={(v) => updateFormWithReset({ businessLiabilities: v })} currency={currency} exchangeRates={exchangeRates} />
           </div>
 
           <div className="form-subsection">
@@ -693,7 +725,7 @@ export default function App() {
                   <button type="button" className="card-remove" onClick={() => removeLoan(i)} aria-label="Remove">×</button>
                 </div>
                 <InputRow label="Description" type="text" value={l.description} onChange={(v) => updateLoan(i, { description: v })} placeholder="e.g. Loan to friend" />
-                <InputRow label="Amount" prefix="$" value={l.amount} onChange={(v) => updateLoan(i, { amount: v })} />
+                <InputRow label="Amount" prefix="$" value={l.amount} onChange={(v) => updateLoan(i, { amount: v })} currency={currency} exchangeRates={exchangeRates} />
                 <label className="card-check">
                   <input type="checkbox" checked={l.strong !== false} onChange={(e) => updateLoan(i, { strong: e.target.checked })} />
                   Strong debt (zakatable)
@@ -710,13 +742,13 @@ export default function App() {
               <span>Personal Liabilities</span>
             </div>
             <SectionHelp text="We subtract debts you have to pay soon. For your mortgage, we only count the next one payment, not the whole loan." />
-            <InputRow label="Credit card balances" prefix="$" value={formData.creditCard} onChange={(v) => updateFormWithReset({ creditCard: v })} />
-            <InputRow label="Mortgage (next principal payment)" prefix="$" value={formData.mortgageNextPrincipal} onChange={(v) => updateFormWithReset({ mortgageNextPrincipal: v })} />
-            <InputRow label="Personal loans due this year" prefix="$" value={formData.personalLoans} onChange={(v) => updateFormWithReset({ personalLoans: v })} />
-            <InputRow label="Money owed to family or friends" prefix="$" value={formData.moneyOwed} onChange={(v) => updateFormWithReset({ moneyOwed: v })} />
-            <InputRow label="Unpaid taxes & bills" prefix="$" value={formData.unpaidTaxesBills} onChange={(v) => updateFormWithReset({ unpaidTaxesBills: v })} />
-            <InputRow label="Unpaid zakat from previous years" prefix="$" value={formData.unpaidZakatPrior} onChange={(v) => updateFormWithReset({ unpaidZakatPrior: v })} />
-            <InputRow label="Other liabilities" prefix="$" value={formData.otherLiabilities} onChange={(v) => updateFormWithReset({ otherLiabilities: v })} />
+            <InputRow label="Credit card balances" prefix="$" value={formData.creditCard} onChange={(v) => updateFormWithReset({ creditCard: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Mortgage (next principal payment)" prefix="$" value={formData.mortgageNextPrincipal} onChange={(v) => updateFormWithReset({ mortgageNextPrincipal: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Personal loans due this year" prefix="$" value={formData.personalLoans} onChange={(v) => updateFormWithReset({ personalLoans: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Money owed to family or friends" prefix="$" value={formData.moneyOwed} onChange={(v) => updateFormWithReset({ moneyOwed: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Unpaid taxes & bills" prefix="$" value={formData.unpaidTaxesBills} onChange={(v) => updateFormWithReset({ unpaidTaxesBills: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Unpaid zakat from previous years" prefix="$" value={formData.unpaidZakatPrior} onChange={(v) => updateFormWithReset({ unpaidZakatPrior: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label="Other liabilities" prefix="$" value={formData.otherLiabilities} onChange={(v) => updateFormWithReset({ otherLiabilities: v })} currency={currency} exchangeRates={exchangeRates} />
           </div>
         </FormSection>
       </div>
@@ -806,16 +838,22 @@ export default function App() {
   )
 }
 
-function CryptoFormRow({ entry, onUpdate, onRemove }) {
+function CryptoFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
   const [refreshing, setRefreshing] = useState(false)
   const isTrading = entry.isTrading !== false
+  const curr = exchangeRates && exchangeRates[currency] ? currency : 'USD'
 
   async function handleRefresh() {
     if (!entry.coinId) return
     setRefreshing(true)
     const prices = await fetchCryptoPrices([entry.coinId])
     setRefreshing(false)
-    if (prices[entry.coinId] != null) onUpdate({ price: String(prices[entry.coinId]) })
+    if (prices[entry.coinId] != null) {
+      const usd = prices[entry.coinId]
+      const rates = exchangeRates || { USD: 1 }
+      const inUserCurr = convertFromUSD(usd, curr, rates)
+      onUpdate({ price: String(Math.round(inUserCurr * 100) / 100) })
+    }
   }
 
   return (
@@ -836,16 +874,20 @@ function CryptoFormRow({ entry, onUpdate, onRemove }) {
         <CryptoAutocomplete
           value={entry.name}
           onChange={(v) => onUpdate({ name: v })}
-          onCoinSelect={(c) => onUpdate({ coinId: c.id, name: c.name, entryLabel: c.name, price: c.price != null ? String(c.price) : '' })}
+          onCoinSelect={(c) => {
+            const rates = exchangeRates || { USD: 1 }
+            const price = c.price != null ? convertFromUSD(c.price, curr, rates) : ''
+            onUpdate({ coinId: c.id, name: c.name, entryLabel: c.name, price: price !== '' ? String(Math.round(price * 100) / 100) : '' })
+          }}
         />
       </div>
       <div className="card-row">
         <InputRow label="Amount held" value={entry.amount} onChange={(v) => onUpdate({ amount: v })} placeholder="e.g. 0.5" />
         <div className="card-field">
-          <label>Price per coin ($)</label>
+          <label>Price per coin</label>
           <div className="input-with-refresh">
             <div className="input-wrap">
-              <span className="prefix">$</span>
+              <span className="prefix">{getCurrencySymbol(curr)}</span>
               <input type="number" className="input has-prefix" value={entry.price ?? ''} onChange={(e) => onUpdate({ price: e.target.value })} placeholder="Auto-filled" min="0" step="0.01" inputMode="decimal" />
             </div>
             <button type="button" className="btn-refresh" onClick={handleRefresh} disabled={!entry.coinId || refreshing} title="Refresh price">
@@ -854,12 +896,12 @@ function CryptoFormRow({ entry, onUpdate, onRemove }) {
           </div>
         </div>
       </div>
-      <InputRow label="Or enter total value ($)" prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="If not using amount × price" />
+      <InputRow label="Or enter total value" prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="If not using amount × price" currency={currency} exchangeRates={exchangeRates} />
     </div>
   )
 }
 
-function StocksLongFormRow({ entry, onUpdate, onRemove }) {
+function StocksLongFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
   const mode = entry.stocksInputMode || 'per_share'
   return (
     <div className="card-sub">
@@ -881,10 +923,10 @@ function StocksLongFormRow({ entry, onUpdate, onRemove }) {
       {mode === 'per_share' ? (
         <div className="card-row">
           <InputRow label="Shares" value={entry.shares} onChange={(v) => onUpdate({ shares: v })} placeholder="e.g. 100" />
-          <InputRow label="Price/share ($)" prefix="$" value={entry.pricePerShare} onChange={(v) => onUpdate({ pricePerShare: v })} placeholder="e.g. 150.00" />
+          <InputRow label="Price/share" prefix="$" value={entry.pricePerShare} onChange={(v) => onUpdate({ pricePerShare: v })} placeholder="e.g. 150.00" currency={currency} exchangeRates={exchangeRates} />
         </div>
       ) : (
-        <InputRow label="Total market value ($)" prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="e.g. 15000.00" />
+        <InputRow label="Total market value" prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="e.g. 15000.00" currency={currency} exchangeRates={exchangeRates} />
       )}
       <InputRow label="Zakatable fraction (0–1)" value={entry.zakatableFraction} onChange={(v) => onUpdate({ zakatableFraction: parseFloat(v) || 0.3 })} placeholder="0.3" />
     </div>
