@@ -82,6 +82,10 @@ function buildAssetBreakdownDetailed(form, totals) {
 
   if ((goldSilverList || []).length > 0) {
     const entries = goldSilverList.map((e) => {
+      const directValue = e.value != null ? Number(e.value) : 0
+      if (directValue > 0) {
+        return { label: e.entryLabel || 'Gold & silver', value: directValue, steps: null }
+      }
       const g = Number(e.goldGrams) || 0
       const s = Number(e.silverGrams) || 0
       const goldVal = g * (goldPricePerGram || 0)
@@ -297,7 +301,10 @@ export function calculateZakat(form) {
 
   const nisab = nisabInDollars(goldPricePerGram, silverPricePerGram, nisabStandard === 'gold')
 
-  const goldSilver = (goldGrams || 0) * (goldPricePerGram || 0) + (silverGrams || 0) * (silverPricePerGram || 0)
+  const preciousMetalsValueUsd = Number(form.preciousMetalsValueUsd) || 0
+  const goldSilver = preciousMetalsValueUsd > 0
+    ? preciousMetalsValueUsd
+    : (goldGrams || 0) * (goldPricePerGram || 0) + (silverGrams || 0) * (silverPricePerGram || 0)
   const cash = Number(cashAndSavings) || 0
   const crypto = (cryptoList || []).reduce((s, c) => {
     if (c.isTrading === false) return s

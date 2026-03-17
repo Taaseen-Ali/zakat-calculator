@@ -17,6 +17,8 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
   const {
     goldGrams,
     silverGrams,
+    preciousMetalsInputMode,
+    preciousMetalsValue,
     cashAndSavings,
     cryptoList,
     stocksShortTerm,
@@ -47,9 +49,13 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
     otherLiabilities
   } = formData
 
-  const goldSilverList = (goldGrams != null || silverGrams != null)
-    ? [{ goldGrams: goldGrams ?? '', silverGrams: silverGrams ?? '', entryLabel: 'Gold & silver' }]
-    : []
+  const isValueMode = preciousMetalsInputMode === 'value'
+  const preciousMetalsValueUsd = isValueMode && (preciousMetalsValue != null && Number(preciousMetalsValue) > 0) ? usd(preciousMetalsValue) : 0
+  const goldSilverList = isValueMode
+    ? (preciousMetalsValueUsd > 0 ? [{ value: preciousMetalsValueUsd, entryLabel: 'Gold & silver' }] : [])
+    : (goldGrams != null || silverGrams != null)
+      ? [{ goldGrams: goldGrams ?? '', silverGrams: silverGrams ?? '', entryLabel: 'Gold & silver' }]
+      : []
 
   const cashList = (cashAndSavings != null && Number(cashAndSavings) > 0)
     ? [{ amount: usd(cashAndSavings), entryLabel: 'Cash' }]
@@ -117,6 +123,7 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
     nisabStandard,
     goldGrams: Number(goldGrams) || 0,
     silverGrams: Number(silverGrams) || 0,
+    preciousMetalsValueUsd: preciousMetalsValueUsd,
     goldSilverList,
     goldPricePerGram: goldPrice,
     silverPricePerGram: silverPrice,
@@ -158,6 +165,8 @@ export function formDataToForm(formData, nisabStandard, goldPrice, silverPrice, 
 export const defaultFormData = {
   goldGrams: '',
   silverGrams: '',
+  preciousMetalsInputMode: 'grams',
+  preciousMetalsValue: '',
   cashAndSavings: '',
   cryptoList: [],
   stocksShortTerm: '',

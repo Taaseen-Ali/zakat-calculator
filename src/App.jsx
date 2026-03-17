@@ -10,6 +10,7 @@ import { fetchCryptoPrices } from './utils/cryptoApi'
 import { TickerAutocomplete } from './components/TickerAutocomplete'
 import { CryptoAutocomplete } from './components/CryptoAutocomplete'
 import { CurrencyAmount } from './components/CurrencyAmount'
+import { FikrSiteHeader } from './components/FikrSiteHeader'
 import './App.css'
 
 function useLocalState(key, initial, migrate) {
@@ -300,9 +301,8 @@ export default function App() {
   const updateRetirementFund = (index, data) => updateListWithReset('retirementFundsList', (list) => list.map((f, i) => (i === index ? { ...f, ...data } : f)))
   const removeRetirementFund = (index) => updateListWithReset('retirementFundsList', (list) => list.filter((_, i) => i !== index))
 
-  return (
-    <div className="dashboard">
-      <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'} ${stickyBarMinimized ? 'minimized' : ''}`} aria-hidden={!showStickyBar}>
+  const stickyBarEl = (
+    <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'} ${stickyBarMinimized ? 'minimized' : ''}`} aria-hidden={!showStickyBar}>
         <div className="zakat-sticky-bar-inner">
           <div className="zakat-sticky-bar-content">
             <span className="zakat-sticky-bar-label">Assets</span>
@@ -334,9 +334,6 @@ export default function App() {
         </div>
         {stickyBarMinimized && (
           <div className="zakat-sticky-bar-brand">
-            <a href="https://fikr.us" target="_blank" rel="noopener noreferrer" className="zakat-sticky-bar-logo-link" aria-label="FIKR">
-              <img src={`${import.meta.env.BASE_URL}fikr-logo.png`} alt="FIKR" className="zakat-sticky-bar-logo" />
-            </a>
             <span className="zakat-sticky-bar-title">FIKR Zakat Calculator</span>
           </div>
         )}
@@ -351,12 +348,15 @@ export default function App() {
           </svg>
         </button>
       </div>
+  )
 
+  return (
+    <div className="app-wrap">
+      <FikrSiteHeader />
+      {createPortal(stickyBarEl, document.body)}
+      <div className="dashboard">
       <header className="dashboard-header">
         <div className="dashboard-brand">
-          <a href="https://fikr.us" target="_blank" rel="noopener noreferrer" className="header-logo-link" aria-label="FIKR">
-            <img src={`${import.meta.env.BASE_URL}fikr-logo.png`} alt="FIKR" className="header-logo" />
-          </a>
           <div className="dashboard-brand-text">
             <span className="dashboard-logo">FIKR</span>
             <h1 className="dashboard-title">Zakat Calculator</h1>
@@ -526,7 +526,16 @@ export default function App() {
             <div className="form-subsection-header">
               <span>Precious Metals</span>
             </div>
-            <SectionHelp text="We multiply how much you have (in grams) by today's price to get the value. All of it counts toward zakat. Use the ↻ button to refresh prices." />
+            <SectionHelp text={(formData.preciousMetalsInputMode || 'grams') === 'grams' ? "We multiply how much you have (in grams) by today's price to get the value. All of it counts toward zakat. Use the ↻ button to refresh prices." : "Enter the total market value of your gold and silver. All of it counts toward zakat."} />
+            <div className="card-field">
+              <label>Method</label>
+              <div className="card-pill">
+                <button type="button" className={(formData.preciousMetalsInputMode || 'grams') === 'grams' ? 'active' : ''} onClick={() => updateFormWithReset({ preciousMetalsInputMode: 'grams' })}>Grams</button>
+                <button type="button" className={formData.preciousMetalsInputMode === 'value' ? 'active' : ''} onClick={() => updateFormWithReset({ preciousMetalsInputMode: 'value' })}>Value</button>
+              </div>
+            </div>
+            {(formData.preciousMetalsInputMode || 'grams') === 'grams' ? (
+              <>
             <div className="card-row">
               <InputRow label="Gold owned (grams)" value={formData.goldGrams} onChange={(v) => updateFormWithReset({ goldGrams: v })} placeholder="e.g. 50" />
               <div className="card-field">
@@ -547,6 +556,12 @@ export default function App() {
                 </div>
               </div>
             </div>
+              </>
+            ) : (
+              <>
+            <InputRow label="Total value (gold & silver)" prefix="$" value={formData.preciousMetalsValue} onChange={(v) => updateFormWithReset({ preciousMetalsValue: v })} placeholder="e.g. 5000" currency={currency} exchangeRates={exchangeRates} />
+              </>
+            )}
           </div>
 
           <div className="form-subsection">
@@ -760,7 +775,7 @@ export default function App() {
         <p className="donations-intro">Organizations that accept zakat for distribution to eligible recipients.</p>
 
         <div className="donations-section-label">Support FIKR</div>
-        <a href="https://www.zeffy.com/en-US/donation-form/contribute-your-zakah-in-impactful-avenues" target="_blank" rel="noopener noreferrer" className="donations-card donations-card-fikr">
+        <a href="https://www.zeffy.com/en-US/donation-form/contribute-your-zakah-in-impactful-avenues" className="donations-card donations-card-fikr">
           <div>
             <div className="donations-card-title">Donate Zakat to FIKR</div>
             <div className="donations-card-desc">100% goes to eligible needy students</div>
@@ -770,56 +785,56 @@ export default function App() {
 
         <div className="donations-section-label">Other reputable organizations that collect zakat, run under the supervision of competent &apos;ulama</div>
         <div className="donations-cards">
-          <a href="https://www.thirdpillar.us/" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://www.thirdpillar.us/" className="donations-card">
             <div>
               <div className="donations-card-title">Third Pillar</div>
               <div className="donations-card-desc">Zakat distribution · Community support</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://www.brighterfuturesusa.org" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://www.brighterfuturesusa.org" className="donations-card">
             <div>
               <div className="donations-card-title">Brighter Futures</div>
               <div className="donations-card-desc">Education &amp; community development</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://www.childrenofadam.us/" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://www.childrenofadam.us/" className="donations-card">
             <div>
               <div className="donations-card-title">Children of Adam</div>
               <div className="donations-card-desc">Humanitarian relief &amp; development</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://al-misbaah.org/pages/our-team" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://al-misbaah.org/pages/our-team" className="donations-card">
             <div>
               <div className="donations-card-title">Al Misbaah</div>
               <div className="donations-card-desc">Community services &amp; support</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://one-humanity.net/" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://one-humanity.net/" className="donations-card">
             <div>
               <div className="donations-card-title">One Humanity</div>
               <div className="donations-card-desc">Global humanitarian work</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://www.darulihsan.com/donate/" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://www.darulihsan.com/donate/" className="donations-card">
             <div>
               <div className="donations-card-title">Darul Ihsan</div>
               <div className="donations-card-desc">Zakat &amp; community programs</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://www.alimdaad.com/" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://www.alimdaad.com/" className="donations-card">
             <div>
               <div className="donations-card-title">Al-Imdaad Foundation</div>
               <div className="donations-card-desc">Emergency relief &amp; development</div>
             </div>
             <span className="donations-card-arrow" aria-hidden>→</span>
           </a>
-          <a href="https://www.jamiatsa.org/" target="_blank" rel="noopener noreferrer" className="donations-card">
+          <a href="https://www.jamiatsa.org/" className="donations-card">
             <div>
               <div className="donations-card-title">Jamiatul Ulama</div>
               <div className="donations-card-desc">Scholarly oversight · Zakat distribution</div>
@@ -832,8 +847,9 @@ export default function App() {
       </section>
 
       <footer className="dashboard-footer">
-        <p>Zakat guide by <a href="https://fikr.us" target="_blank" rel="noopener noreferrer">Foundation for Inquiry, Knowledge and Revival</a></p>
+        <p>Zakat guide by <a href="https://fikr.us">Foundation for Inquiry, Knowledge and Revival</a></p>
       </footer>
+      </div>
     </div>
   )
 }

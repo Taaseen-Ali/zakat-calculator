@@ -1,9 +1,10 @@
 :root {
-  /* FIKR + tech: deep green, gold, dark base */
-  --fikr-deep: #0a1f1a;
-  --fikr-forest: #0f2d26;
-  --fikr-mid: #1a4a3c;
-  --fikr-accent: #2d6b52;
+  --fikr-header-height: 150px;
+  /* FIKR palette: #0E361C is header green from fikr.us */
+  --fikr-deep: #081c10;
+  --fikr-forest: #0E361C;
+  --fikr-mid: #0c2d18;
+  --fikr-accent: #5a6b45;
   --fikr-gold: #c9a227;
   --fikr-gold-light: #e5c84a;
   --fikr-glow: rgba(201, 162, 39, 0.15);
@@ -11,7 +12,7 @@
   --bg-elevated: #0d1210;
   --bg-card: rgba(18, 24, 21, 0.9);
   --bg-card-solid: #121916;
-  --border: rgba(45, 107, 82, 0.4);
+  --border: rgba(14, 54, 28, 0.4);
   --border-subtle: rgba(255, 255, 255, 0.1);
   --text: #f5f8f6;
   --text-muted: #b8c6c0;
@@ -21,7 +22,7 @@
   --radius-xl: 24px;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 40px rgba(45, 107, 82, 0.15);
+  --shadow-glow: 0 0 40px rgba(5, 74, 32, 0.2);
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -44,7 +45,7 @@ body {
   line-height: 1.6;
   background: var(--bg-base);
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 107, 82, 0.15), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 54, 28, 0.12), transparent),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(201, 162, 39, 0.06), transparent);
   color: var(--text);
   line-height: 1.5;
@@ -82,7 +83,7 @@ input[type="number"]::-webkit-inner-spin-button {
   --bg-elevated: #ffffff;
   --bg-card: rgba(255, 255, 255, 0.95);
   --bg-card-solid: #f8faf8;
-  --border: rgba(45, 107, 82, 0.35);
+  --border: rgba(14, 54, 28, 0.35);
   --border-subtle: rgba(0, 0, 0, 0.1);
   --text: #1a2320;
   --text-muted: #5a6b63;
@@ -91,10 +92,22 @@ input[type="number"]::-webkit-inner-spin-button {
   --shadow-glow: 0 0 40px rgba(201, 162, 39, 0.12);
 }
 
+@media (max-width: 1024px) {
+  :root {
+    --fikr-header-height: 117px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --fikr-header-height: 64px;
+  }
+}
+
 [data-theme="light"] body {
   background: var(--bg-base);
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 107, 82, 0.08), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 54, 28, 0.08), transparent),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(201, 162, 39, 0.05), transparent);
   color: var(--text);
 }

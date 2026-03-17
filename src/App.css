@@ -1,7 +1,412 @@
+/* FIKR site header — matches fikr.us layout, colors, and structure */
+:root {
+  --fikr-header-primary: #0E361C;
+  --fikr-header-secondary: #042514;
+  --fikr-header-nav: #ededed;
+  --fikr-header-nav-active: #ffffff;
+  --fikr-header-accent: #7c9060;
+}
+
+.app-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: var(--fikr-header-height);
+}
+
+.fikr-site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  width: 100%;
+  flex-shrink: 0;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* Top bar — Tel, Email | Study links (hidden on mobile). Matches fikr.us: padding 12px 30px */
+.fikr-top-bar {
+  background: var(--fikr-header-secondary);
+}
+
+.fikr-top-bar-inner {
+  max-width: 1302px;
+  margin: 0 auto;
+  padding: 12px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.fikr-top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--fikr-header-nav);
+}
+
+.fikr-top-bar-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--fikr-header-accent);
+}
+
+.fikr-top-bar-left a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fikr-top-bar-left a:hover {
+  color: var(--fikr-header-nav-active);
+}
+
+.fikr-top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fikr-top-bar-link {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #dedede;
+  text-decoration: none;
+}
+
+.fikr-top-bar-link:hover {
+  color: var(--fikr-header-primary);
+}
+
+/* Main header. Matches fikr.us: container 1302px, padding 16px 30px, logo 260px, nav margin 0 24px, item gap 25px */
+.fikr-main-header {
+  background: var(--fikr-header-primary);
+}
+
+.fikr-main-header-inner {
+  max-width: 1302px;
+  margin: 0 auto;
+  padding: 16px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 110px;
+}
+
+.fikr-main-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.fikr-logo-link {
+  flex-shrink: 0;
+  margin: -4px 48px 0 0;
+}
+
+.fikr-logo {
+  width: 260px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.fikr-nav-desktop {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin: 0 24px;
+  flex-wrap: wrap;
+}
+
+.fikr-nav-link {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fikr-header-nav);
+  text-decoration: none;
+  padding: 4px 0;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.fikr-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.fikr-nav-link:hover,
+.fikr-nav-link--current {
+  color: var(--fikr-header-nav-active);
+}
+
+.fikr-nav-link:hover::after,
+.fikr-nav-link--current::after {
+  background: var(--fikr-header-nav-active);
+}
+
+.fikr-nav-link--current {
+  cursor: default;
+}
+
+.fikr-search-toggle {
+  margin-left: 0;
+  padding: 4px;
+  background: none;
+  border: none;
+  color: var(--fikr-header-nav-active);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fikr-search-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.fikr-search-toggle:hover {
+  opacity: 0.9;
+}
+
+/* Menu toggle — matches fikr.us elementor-menu-toggle */
+.fikr-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 22px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 3px;
+  color: var(--fikr-header-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fikr-menu-toggle svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: block;
+}
+
+.fikr-menu-toggle:hover,
+.fikr-menu-toggle:focus {
+  color: var(--fikr-header-primary);
+}
+
+.fikr-menu-toggle .fikr-menu-icon-close {
+  display: none;
+}
+
+.fikr-menu-toggle[aria-expanded="true"] .fikr-menu-icon-open {
+  display: none;
+}
+
+.fikr-menu-toggle[aria-expanded="true"] .fikr-menu-icon-close {
+  display: block;
+}
+
+/* Mobile menu overlay — matches fikr.us elementor-nav-menu--dropdown */
+.fikr-mobile-menu {
+  position: fixed;
+  top: var(--fikr-header-height);
+  left: 0;
+  right: 0;
+  background: var(--fikr-header-nav);
+  border: solid;
+  border-width: 0 24px 16px 8px;
+  border-color: var(--fikr-header-nav);
+  border-radius: 0 0 4px 4px;
+  padding: 16px 24px 16px 16px;
+  box-shadow: 0 0 48px -12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: calc(100vh - var(--fikr-header-height));
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-12px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+}
+
+.fikr-mobile-menu--open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.fikr-mobile-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.fikr-mobile-nav-link {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 1.5px;
+  color: var(--fikr-header-secondary);
+  text-decoration: none;
+  padding: 10px 16px;
+  transition: color 0.2s;
+}
+
+.fikr-mobile-nav-link:hover,
+.fikr-mobile-nav-link--current {
+  color: var(--fikr-header-primary);
+}
+
+.fikr-mobile-nav-link--current {
+  cursor: default;
+}
+
+.fikr-mobile-nav .fikr-mobile-nav-link:not(:last-child) {
+  margin-bottom: 8px;
+}
+
+/* Search overlay */
+.fikr-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 37, 20, 0.98);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.fikr-search-form {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+}
+
+.fikr-search-input {
+  width: 100%;
+  font-size: 24px;
+  padding: 16px 56px 16px 20px;
+  border: 2px solid var(--fikr-header-nav);
+  background: transparent;
+  color: var(--fikr-header-nav-active);
+  font-family: inherit;
+  border-radius: 4px;
+}
+
+.fikr-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.fikr-search-close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--fikr-header-nav-active);
+  cursor: pointer;
+}
+
+.fikr-search-close svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Responsive — matches fikr.us post-260 breakpoints */
+@media (max-width: 1024px) {
+  .fikr-main-header-inner {
+    padding: 16px 30px 16px 30px;
+    min-height: auto;
+  }
+
+  .fikr-logo {
+    width: 158px;
+  }
+
+  .fikr-logo-link {
+    margin: 0 24px 0 0;
+  }
+
+  .fikr-nav-desktop {
+    margin: 0 16px 0 0;
+    gap: 10px;
+  }
+
+  .fikr-nav-link {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  .fikr-top-bar {
+    display: none;
+  }
+
+  .fikr-main-header-inner {
+    padding: 16px 30px;
+    min-height: auto;
+  }
+
+  .fikr-main-header-left {
+    justify-content: space-between;
+  }
+
+  .fikr-logo-link {
+    margin: 0;
+  }
+
+  .fikr-logo {
+    width: 70%;
+    max-width: 200px;
+  }
+
+  .fikr-nav-desktop,
+  .fikr-search-toggle {
+    display: none;
+  }
+
+  .fikr-menu-toggle {
+    display: flex;
+  }
+}
+
+/* Light theme override — keep header dark to match fikr branding */
+/* Light mode: header needs solid background so white text is visible on light page */
+[data-theme="light"] .fikr-top-bar {
+  background: var(--fikr-header-secondary);
+}
+
+[data-theme="light"] .fikr-main-header {
+  background: var(--fikr-header-primary);
+}
+
 .dashboard {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px 24px;
+  width: 100%;
   height: auto;
   min-height: 0;
   overflow: visible;
@@ -1992,7 +2397,7 @@
 /* Sticky compact Zakat due bar (shown when main result scrolls out of view) */
 .zakat-sticky-bar {
   position: fixed;
-  top: 0;
+  top: calc(var(--fikr-header-height) - 1px);
   left: 0;
   right: 0;
   z-index: 100;
@@ -2022,7 +2427,8 @@
 }
 
 .zakat-sticky-bar.hidden {
-  transform: translateY(-100%);
+  /* Move fully above viewport so it doesn't peek under the header */
+  transform: translateY(calc(-100% - var(--fikr-header-height)));
   pointer-events: none;
 }
 
@@ -2059,6 +2465,8 @@
   gap: 10px;
   flex: 1;
   min-width: 0;
+  /* Align with header logo: same max-width 1302px + 30px padding */
+  padding-left: calc(max(0px, (100vw - 1302px) / 2) + 18px);
 }
 
 .zakat-sticky-bar-logo-link {
