@@ -466,6 +466,10 @@
   width: 100%;
 }
 
+.dashboard-meta-spacer {
+  flex: 1;
+}
+
 .dashboard-meta .prices-pill {
   margin-left: auto;
 }

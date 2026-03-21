@@ -42,7 +42,7 @@ export function FikrSiteHeader() {
   }, [])
 
   return (
-    <header className="fikr-site-header" ref={headerRef}>
+    <header className="fikr-site-header" ref={headerRef} dir="ltr">
       {/* Top bar — hidden on mobile */}
       <div className="fikr-top-bar">
         <div className="fikr-top-bar-inner">

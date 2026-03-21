@@ -11,6 +11,7 @@ import { TickerAutocomplete } from './components/TickerAutocomplete'
 import { CryptoAutocomplete } from './components/CryptoAutocomplete'
 import { CurrencyAmount } from './components/CurrencyAmount'
 import { FikrSiteHeader } from './components/FikrSiteHeader'
+import { useLanguage, t, LANGUAGES } from './i18n'
 import './App.css'
 
 function useLocalState(key, initial, migrate) {
@@ -90,7 +91,7 @@ function InputRow({ label, prefix, value, onChange, placeholder, type = 'number'
   )
 }
 
-function InfoTooltip({ text }) {
+function InfoTooltip({ text, onRefresh, refreshing }) {
   const [visible, setVisible] = useState(false)
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const wrapRef = useRef(null)
@@ -147,7 +148,14 @@ function InfoTooltip({ text }) {
           role="tooltip"
           style={{ top: position.top, left: position.left }}
         >
-          {text}
+          {text.split('\n\n').map((part, i) =>
+            i === 0 ? <p key={i} style={{ margin: 0 }}>{part}</p> : (
+              <div key={i} style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85em', opacity: 0.85 }}>
+                <span>{part}</span>
+                {onRefresh && <button type="button" onClick={onRefresh} disabled={refreshing} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontSize: '1em' }} title="Refresh prices">{refreshing ? '…' : '↻'}</button>}
+              </div>
+            )
+          )}
         </div>,
         document.body
       )}
@@ -155,19 +163,19 @@ function InfoTooltip({ text }) {
   )
 }
 
-function HideSensitiveSwitch({ checked, onChange, className = '' }) {
+function HideSensitiveSwitch({ checked, onChange, className = '', label = 'Hide sensitive numbers' }) {
   return (
     <label className={`hide-sensitive-switch ${className}`}>
-      <span className="hide-sensitive-label">Hide sensitive numbers</span>
+      <span className="hide-sensitive-label">{label}</span>
       <span className="hide-sensitive-toggle">
-        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} aria-label="Hide sensitive numbers" />
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} aria-label={label} />
         <span className="hide-sensitive-slider" />
       </span>
     </label>
   )
 }
 
-function SectionHelp({ text, compact }) {
+function SectionHelp({ text, compact, hideLabel = 'Hide', showLabel = 'Show explanation' }) {
   const [expanded, setExpanded] = useState(true)
   if (!text) return null
   if (expanded) {
@@ -175,7 +183,7 @@ function SectionHelp({ text, compact }) {
       <div className={`section-help ${compact ? 'section-help--compact' : ''}`}>
         <p className="section-help-text">{text}</p>
         <button type="button" className="section-help-hide" onClick={() => setExpanded(false)} aria-label="Hide explanation">
-          Hide
+          {hideLabel}
         </button>
       </div>
     )
@@ -184,7 +192,7 @@ function SectionHelp({ text, compact }) {
     <span className="section-help-show-wrap">
       <span className="section-help-show-icon" aria-hidden>?</span>
       <button type="button" className="section-help-show" onClick={() => setExpanded(true)}>
-        Show explanation
+        {showLabel}
       </button>
     </span>
   )
@@ -196,6 +204,7 @@ export default function App() {
   const [exchangeRates, setExchangeRates] = useState(null)
   const [nisabStandard, setNisabStandard] = useLocalState('fikr-nisab', 'gold')
   const [formData, setFormData] = useLocalState('fikr-formData', defaultFormData, migrateFormData)
+  const [lang, setLanguage] = useLanguage()
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -282,7 +291,7 @@ export default function App() {
   const removeCrypto = (index) => updateListWithReset('cryptoList', (list) => list.filter((_, i) => i !== index))
 
   const addStocksLong = () => updateListWithReset('stocksLongTermList', (list) => [...list, { id: uid(), ticker: '', shares: '', pricePerShare: '', value: '', zakatableFraction: 0.3, stocksInputMode: 'per_share', entryLabel: '' }])
-  const updateStocksLong = (index, data) => updateListWithReset('stocksLongTermList', (list) => list.map((t, i) => (i === index ? { ...t, ...data } : t)))
+  const updateStocksLong = (index, data) => updateListWithReset('stocksLongTermList', (list) => list.map((s, i) => (i === index ? { ...s, ...data } : s)))
   const removeStocksLong = (index) => updateListWithReset('stocksLongTermList', (list) => list.filter((_, i) => i !== index))
 
   const addRealEstate = () => updateListWithReset('realEstateFlippingList', (list) => [...list, { id: uid(), name: '', marketValue: '', entryLabel: `Property ${(list?.length || 0) + 1}` }])
@@ -301,13 +310,15 @@ export default function App() {
   const updateRetirementFund = (index, data) => updateListWithReset('retirementFundsList', (list) => list.map((f, i) => (i === index ? { ...f, ...data } : f)))
   const removeRetirementFund = (index) => updateListWithReset('retirementFundsList', (list) => list.filter((_, i) => i !== index))
 
+  const hideLabel = t('hideNumbers', lang)
+
   const stickyBarEl = (
     <div className={`zakat-sticky-bar ${showStickyBar ? '' : 'hidden'} ${stickyBarMinimized ? 'minimized' : ''}`} aria-hidden={!showStickyBar}>
         <div className="zakat-sticky-bar-inner">
           <div className="zakat-sticky-bar-content">
-            <span className="zakat-sticky-bar-label">Assets</span>
-            <span className="zakat-sticky-bar-label">Liabilities</span>
-            <span className="zakat-sticky-bar-label">Zakat due</span>
+            <span className="zakat-sticky-bar-label">{t('assets', lang)}</span>
+            <span className="zakat-sticky-bar-label">{t('liabilities', lang)}</span>
+            <span className="zakat-sticky-bar-label">{t('zakatDue', lang)}</span>
             <span className="zakat-sticky-bar-amount"><CurrencyAmount usdAmount={result.totalZakatableAssets} {...currencyProps} /></span>
             <span className="zakat-sticky-bar-amount"><CurrencyAmount usdAmount={result.totalLiabilities} negative {...currencyProps} /></span>
             {zakatCalculated ? (
@@ -321,20 +332,20 @@ export default function App() {
                   setShowCalculation(true)
                 }}
               >
-                See calculation
+                {t('seeCalculation', lang)}
               </button>
             </div>
           ) : (
             <div className="zakat-sticky-bar-amount-cell zakat-sticky-bar-amount-cell-full">
-              <button type="button" className="zakat-sticky-bar-calc" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
+              <button type="button" className="zakat-sticky-bar-calc" onClick={() => setZakatCalculated(true)}>{t('calculateZakat', lang)}</button>
             </div>
           )}
           </div>
-          <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} className="hide-sensitive-switch--sticky" />
+          <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} className="hide-sensitive-switch--sticky" label={hideLabel} />
         </div>
         {stickyBarMinimized && (
           <div className="zakat-sticky-bar-brand">
-            <span className="zakat-sticky-bar-title">FIKR Zakat Calculator</span>
+            <span className="zakat-sticky-bar-title">FIKR {t('appTitle', lang)}</span>
           </div>
         )}
         <button
@@ -355,15 +366,15 @@ export default function App() {
       <FikrSiteHeader />
       {createPortal(stickyBarEl, document.body)}
       <div className="dashboard">
-      <header className="dashboard-header">
+      <header className="dashboard-header" dir="ltr">
         <div className="dashboard-brand">
           <div className="dashboard-brand-text">
             <span className="dashboard-logo">FIKR</span>
-            <h1 className="dashboard-title">Zakat Calculator</h1>
+            <h1 className="dashboard-title">{t('appTitle', lang)}</h1>
           </div>
         </div>
         <div className="dashboard-meta">
-          <button type="button" className="btn-theme-toggle" onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+          <button type="button" className="btn-theme-toggle" onClick={() => setTheme((th) => (th === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? t('lightMode', lang) : t('darkMode', lang)} title={theme === 'dark' ? t('lightMode', lang) : t('darkMode', lang)}>
             {theme === 'dark' ? (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             ) : (
@@ -371,13 +382,21 @@ export default function App() {
             )}
           </button>
           <button type="button" className="btn-clear-form" onClick={() => { setFormData(defaultFormData); setZakatCalculated(false); }}>
-            <span className="btn-clear-full">Clear form</span>
-            <span className="btn-clear-short">Clear</span>
+            <span className="btn-clear-full">{t('clearForm', lang)}</span>
+            <span className="btn-clear-short">{t('clearFormShort', lang)}</span>
           </button>
-          <div className="prices-pill">
-            <span>{pricesLoading ? '…' : (goldPrice != null ? `Gold ${priceFmt(goldPrice)}/g` : 'Gold')}</span>
-            <span>{pricesLoading ? '…' : (silverPrice != null ? `Silver ${priceFmt(silverPrice)}/g` : 'Silver')}</span>
-            <button type="button" onClick={refreshMetalPrices} disabled={pricesLoading} title="Refresh gold & silver prices">↻</button>
+          <div className="dashboard-meta-spacer" />
+          <div className="currency-selector-wrap">
+            <select
+              value={lang}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="currency-select"
+              aria-label="Display language"
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>{l.nativeName}</option>
+              ))}
+            </select>
           </div>
           <div className="currency-selector-wrap">
             <select
@@ -385,10 +404,10 @@ export default function App() {
               onChange={(e) => setCurrency(e.target.value)}
               className="currency-select"
               aria-label="Display currency"
-              title="Display currency (rates via Frankfurter)"
+              title="Display currency"
             >
               {CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>
+                <option key={c.code} value={c.code}>{c.symbol} {c.name}</option>
               ))}
             </select>
           </div>
@@ -398,36 +417,41 @@ export default function App() {
       <div className="dashboard-result" ref={resultRef}>
         <div className="result-top">
           <div className="result-main">
-            <span className="result-label">Zakat due</span>
+            <span className="result-label">{t('zakatDue', lang)}</span>
             {zakatCalculated ? (
               <span className="result-amount"><CurrencyAmount usdAmount={result.zakatDue} dec={2} {...currencyProps} /></span>
             ) : (
-              <button type="button" className="result-calc-link" onClick={() => setZakatCalculated(true)}>Calculate Zakat</button>
+              <button type="button" className="result-calc-link" onClick={() => setZakatCalculated(true)}>{t('calculateZakat', lang)}</button>
             )}
           </div>
           <div className="result-top-right">
             <div className="nisab-selector">
               <div className="nisab-selector-header">
-                <span className="nisab-selector-label">Nisab threshold</span>
-                <InfoTooltip text="Think of nisab like a line. If your money is above this line, you give zakat. If it's below, you don't have to. You can measure it with gold (87.48g) or silver (612.36g). Jurists give fatwa on the silver niṣāb because it is more beneficial for the needy (anfaʿ li-l-fuqarā)." />
+                <span className="nisab-selector-label">{t('nisabThreshold', lang)}</span>
+                <InfoTooltip text={
+                  t('nisabTooltip', lang) +
+                  (goldPrice != null || silverPrice != null
+                    ? `\n\n${t('gold', lang)}: ${pricesLoading ? '…' : priceFmt(goldPrice)}/g · ${t('silver', lang)}: ${pricesLoading ? '…' : priceFmt(silverPrice)}/g`
+                    : '')
+                } onRefresh={refreshMetalPrices} refreshing={pricesLoading} />
               </div>
               <div className="nisab-pill">
-                <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('gold'); }}>Gold 87.48g</button>
-                <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('silver'); }}>Silver 612.36g</button>
+                <button type="button" className={nisabStandard === 'gold' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('gold'); }}>{t('nisabGold', lang)}</button>
+                <button type="button" className={nisabStandard === 'silver' ? 'active' : ''} onClick={() => { setZakatCalculated(false); setNisabStandard('silver'); }}>{t('nisabSilver', lang)}</button>
               </div>
             </div>
           </div>
         </div>
         <div className="result-details">
-          <span>Assets <CurrencyAmount usdAmount={result.totalZakatableAssets} {...currencyProps} /></span>
-          <span>− Liabilities <CurrencyAmount usdAmount={result.totalLiabilities} {...currencyProps} /></span>
-          <span>Nisab <CurrencyAmount usdAmount={result.nisab} {...currencyProps} /></span>
+          <span>{t('assets', lang)} <CurrencyAmount usdAmount={result.totalZakatableAssets} {...currencyProps} /></span>
+          <span>− {t('liabilities', lang)} <CurrencyAmount usdAmount={result.totalLiabilities} {...currencyProps} /></span>
+          <span>{t('nisabThreshold', lang)} <CurrencyAmount usdAmount={result.nisab} {...currencyProps} /></span>
         </div>
         <div className="result-bottom-right">
-          <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} />
+          <HideSensitiveSwitch checked={hideSensitiveNumbers} onChange={setHideSensitiveNumbers} label={hideLabel} />
         </div>
         {zakatCalculated && (
-          <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result, { currency, exchangeRates })}>Download PDF</button>
+          <button type="button" className="btn-pdf" onClick={() => exportZakatReport(result, { currency, exchangeRates })}>{t('downloadPdf', lang)}</button>
         )}
         {zakatCalculated && (
         <div className="result-calculation">
@@ -437,13 +461,13 @@ export default function App() {
             onClick={() => setShowCalculation((v) => !v)}
             aria-expanded={showCalculation}
           >
-            <span>{showCalculation ? 'Hide' : 'Show'} calculation</span>
+            <span>{showCalculation ? t('hideCalculation', lang) : t('showCalculation', lang)}</span>
             <svg className={`result-calculation-chevron ${showCalculation ? 'open' : ''}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
           </button>
           {showCalculation && (
             <div className="result-calculation-body">
               <div className="calc-section">
-                <div className="calc-section-title">Assets</div>
+                <div className="calc-section-title">{t('assets', lang)}</div>
                 {(result.assetBreakdownDetailed || []).map((section) => (
                   <div key={section.type || section.label} className="calc-section-sub">
                     <div className="calc-step calc-step-sub calc-step-section">
@@ -467,12 +491,12 @@ export default function App() {
                   </div>
                 ))}
                 <div className="calc-step calc-step-total">
-                  <span className="calc-step-label">Total zakatable assets</span>
+                  <span className="calc-step-label">{t('totalZakatableAssets', lang)}</span>
                   <span className="calc-step-value"><CurrencyAmount usdAmount={result.totalZakatableAssets} dec={2} {...currencyProps} /></span>
                 </div>
               </div>
               <div className="calc-section">
-                <div className="calc-section-title">Liabilities</div>
+                <div className="calc-section-title">{t('liabilities', lang)}</div>
                 {(result.liabilityBreakdownDetailed || []).map((section, idx) => (
                   <div key={idx} className="calc-section-sub">
                     <div className="calc-step calc-step-sub calc-step-section">
@@ -488,29 +512,29 @@ export default function App() {
                   </div>
                 ))}
                 <div className="calc-step calc-step-total">
-                  <span className="calc-step-label">Total liabilities</span>
+                  <span className="calc-step-label">{t('totalLiabilities', lang)}</span>
                   <span className="calc-step-value"><CurrencyAmount usdAmount={result.totalLiabilities} dec={2} negative {...currencyProps} /></span>
                 </div>
               </div>
               <div className="calc-step calc-step-equals">
-                <span className="calc-step-label">Net zakatable wealth</span>
+                <span className="calc-step-label">{t('netZakatableWealth', lang)}</span>
                 <span className="calc-step-value"><CurrencyAmount usdAmount={result.netZakatableWealth} dec={2} {...currencyProps} /></span>
               </div>
               <div className="calc-step">
-                <span className="calc-step-label">Nisab threshold</span>
+                <span className="calc-step-label">{t('nisabThreshold', lang)}</span>
                 <span className="calc-step-value"><CurrencyAmount usdAmount={result.nisab} dec={2} {...currencyProps} /></span>
               </div>
               {result.meetsNisab ? (
                 <div className="calc-step calc-step-result">
                   <div className="calc-step-label-wrap">
-                    <span className="calc-step-label">Zakat due</span>
-                    <span className="calc-step-label-sub">(2.5% of net wealth)</span>
+                    <span className="calc-step-label">{t('zakatDue', lang)}</span>
+                    <span className="calc-step-label-sub">{t('zakatRate', lang)}</span>
                   </div>
                   <span className="calc-step-value"><CurrencyAmount usdAmount={result.zakatDue} dec={2} {...currencyProps} /></span>
                 </div>
               ) : (
                 <div className="calc-step calc-step-result">
-                  <span className="calc-step-label">Net wealth below nisab. No zakat due.</span>
+                  <span className="calc-step-label">{t('netBelowNisab', lang)}</span>
                   <span className="calc-step-value"><CurrencyAmount usdAmount={0} dec={2} {...currencyProps} /></span>
                 </div>
               )}
@@ -521,114 +545,118 @@ export default function App() {
       </div>
 
       <div className="form-layout">
-        <FormSection title="Personal Assets" subtitle="Gold & silver, cash, crypto, stocks, and retirement accounts" defaultOpen={true}>
+        <FormSection title={t('sectionPersonalAssets', lang)} subtitle={t('sectionPersonalAssetsSubtitle', lang)} defaultOpen={true}>
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Precious Metals</span>
+              <span>{t('preciousMetals', lang)}</span>
             </div>
-            <SectionHelp text={(formData.preciousMetalsInputMode || 'grams') === 'grams' ? "We multiply how much you have (in grams) by today's price to get the value. All of it counts toward zakat. Use the ↻ button to refresh prices." : "Enter the total market value of your gold and silver. All of it counts toward zakat."} />
+            <SectionHelp
+              text={(formData.preciousMetalsInputMode || 'grams') === 'grams' ? t('helpPreciousMetalsGrams', lang) : t('helpPreciousMetalsValue', lang)}
+              hideLabel={t('hide', lang)}
+              showLabel={t('showExplanation', lang)}
+            />
             <div className="card-field">
-              <label>Method</label>
+              <label>{t('methodLabel', lang)}</label>
               <div className="card-pill">
-                <button type="button" className={(formData.preciousMetalsInputMode || 'grams') === 'grams' ? 'active' : ''} onClick={() => updateFormWithReset({ preciousMetalsInputMode: 'grams' })}>Grams</button>
-                <button type="button" className={formData.preciousMetalsInputMode === 'value' ? 'active' : ''} onClick={() => updateFormWithReset({ preciousMetalsInputMode: 'value' })}>Value</button>
+                <button type="button" className={(formData.preciousMetalsInputMode || 'grams') === 'grams' ? 'active' : ''} onClick={() => updateFormWithReset({ preciousMetalsInputMode: 'grams' })}>{t('methodGrams', lang)}</button>
+                <button type="button" className={formData.preciousMetalsInputMode === 'value' ? 'active' : ''} onClick={() => updateFormWithReset({ preciousMetalsInputMode: 'value' })}>{t('methodValue', lang)}</button>
               </div>
             </div>
             {(formData.preciousMetalsInputMode || 'grams') === 'grams' ? (
               <>
             <div className="card-row">
-              <InputRow label="Gold owned (grams)" value={formData.goldGrams} onChange={(v) => updateFormWithReset({ goldGrams: v })} placeholder="e.g. 50" />
+              <InputRow label={t('goldOwned', lang)} value={formData.goldGrams} onChange={(v) => updateFormWithReset({ goldGrams: v })} placeholder="e.g. 50" />
               <div className="card-field">
-                <label>Gold price / gram</label>
+                <label>{t('goldPricePerGram', lang)}</label>
                 <div className="input-wrap" data-prefix-len={(getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')).length}>
                   <span className="prefix">{getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')}</span>
-                  <input type="number" className="input has-prefix" value={goldPrice != null ? (Math.round(convertFromUSD(goldPrice, currency, exchangeRates || { USD: 1 }) * 100) / 100) : ''} readOnly placeholder="Loads on page load" />
+                  <input type="number" className="input has-prefix" value={goldPrice != null ? (Math.round(convertFromUSD(goldPrice, currency, exchangeRates || { USD: 1 }) * 100) / 100) : ''} readOnly placeholder={t('loadsOnPageLoad', lang)} />
                 </div>
               </div>
             </div>
             <div className="card-row">
-              <InputRow label="Silver owned (grams)" value={formData.silverGrams} onChange={(v) => updateFormWithReset({ silverGrams: v })} placeholder="e.g. 200" />
+              <InputRow label={t('silverOwned', lang)} value={formData.silverGrams} onChange={(v) => updateFormWithReset({ silverGrams: v })} placeholder="e.g. 200" />
               <div className="card-field">
-                <label>Silver price / gram</label>
+                <label>{t('silverPricePerGram', lang)}</label>
                 <div className="input-wrap" data-prefix-len={(getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')).length}>
                   <span className="prefix">{getCurrencySymbol(exchangeRates && exchangeRates[currency] ? currency : 'USD')}</span>
-                  <input type="number" className="input has-prefix" value={silverPrice != null ? (Math.round(convertFromUSD(silverPrice, currency, exchangeRates || { USD: 1 }) * 100) / 100) : ''} readOnly placeholder="Loads on page load" />
+                  <input type="number" className="input has-prefix" value={silverPrice != null ? (Math.round(convertFromUSD(silverPrice, currency, exchangeRates || { USD: 1 }) * 100) / 100) : ''} readOnly placeholder={t('loadsOnPageLoad', lang)} />
                 </div>
               </div>
             </div>
               </>
             ) : (
               <>
-            <InputRow label="Total value (gold & silver)" prefix="$" value={formData.preciousMetalsValue} onChange={(v) => updateFormWithReset({ preciousMetalsValue: v })} placeholder="e.g. 5000" currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('totalValueGoldSilver', lang)} prefix="$" value={formData.preciousMetalsValue} onChange={(v) => updateFormWithReset({ preciousMetalsValue: v })} placeholder="e.g. 5000" currency={currency} exchangeRates={exchangeRates} />
               </>
             )}
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Cash & Savings</span>
+              <span>{t('cashSavings', lang)}</span>
             </div>
-            <SectionHelp text="Add up everything in your bank: checking, savings, and cash at home. We take 2.5% of that total." />
-            <InputRow label="Cash and bank savings" prefix="$" value={formData.cashAndSavings} onChange={(v) => updateFormWithReset({ cashAndSavings: v })} placeholder="e.g. 10000" currency={currency} exchangeRates={exchangeRates} />
+            <SectionHelp text={t('helpCash', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
+            <InputRow label={t('cashAndBankSavings', lang)} prefix="$" value={formData.cashAndSavings} onChange={(v) => updateFormWithReset({ cashAndSavings: v })} placeholder="e.g. 10000" currency={currency} exchangeRates={exchangeRates} />
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Cryptocurrency</span>
+              <span>{t('cryptocurrency', lang)}</span>
             </div>
-            <SectionHelp text="Crypto is treated like a commodity, not like money. If you're holding it to trade (buy and sell soon), it counts. If you're holding it long-term, it doesn't." />
+            <SectionHelp text={t('helpCrypto', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             {(formData.cryptoList || []).map((c, i) => (
-              <CryptoFormRow key={c.id || i} entry={c} onUpdate={(d) => updateCrypto(i, d)} onRemove={() => removeCrypto(i)} currency={currency} exchangeRates={exchangeRates} />
+              <CryptoFormRow key={c.id || i} entry={c} onUpdate={(d) => updateCrypto(i, d)} onRemove={() => removeCrypto(i)} currency={currency} exchangeRates={exchangeRates} lang={lang} />
             ))}
-            <button type="button" className="add-more" onClick={addCrypto}>+ Add Coin</button>
+            <button type="button" className="add-more" onClick={addCrypto}>{t('addCoin', lang)}</button>
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Stock Investments</span>
+              <span>{t('stockInvestments', lang)}</span>
             </div>
-            <SectionHelp text="Stocks you trade: we count the full value. Stocks you hold for years: we estimate what part of each company is actually cash-like (we use 30% if we don't know). Then 2.5% of that." />
+            <SectionHelp text={t('helpStocks', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             <div className="form-subsubsection">
-              <span className="form-subsubsection-label">Short-Term / Trading</span>
-              <InputRow label="Total market value" prefix="$" value={formData.stocksShortTerm} onChange={(v) => updateFormWithReset({ stocksShortTerm: v })} placeholder="e.g. 15000" currency={currency} exchangeRates={exchangeRates} />
+              <span className="form-subsubsection-label">{t('shortTermTrading', lang)}</span>
+              <InputRow label={t('totalMarketValue', lang)} prefix="$" value={formData.stocksShortTerm} onChange={(v) => updateFormWithReset({ stocksShortTerm: v })} placeholder="e.g. 15000" currency={currency} exchangeRates={exchangeRates} />
             </div>
             <div className="form-subsubsection">
-              <span className="form-subsubsection-label">Long-Term Holdings</span>
-              {(formData.stocksLongTermList || []).map((t, i) => (
-                <StocksLongFormRow key={t.id || i} entry={t} onUpdate={(d) => updateStocksLong(i, d)} onRemove={() => removeStocksLong(i)} currency={currency} exchangeRates={exchangeRates} />
+              <span className="form-subsubsection-label">{t('longTermHoldings', lang)}</span>
+              {(formData.stocksLongTermList || []).map((s, i) => (
+                <StocksLongFormRow key={s.id || i} entry={s} onUpdate={(d) => updateStocksLong(i, d)} onRemove={() => removeStocksLong(i)} currency={currency} exchangeRates={exchangeRates} lang={lang} />
               ))}
-              <button type="button" className="add-more" onClick={addStocksLong}>+ Add Long-Term Stock</button>
+              <button type="button" className="add-more" onClick={addStocksLong}>{t('addLongTermStock', lang)}</button>
             </div>
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>401(k) / IRA Retirement</span>
+              <span>{t('retirement', lang)}</span>
             </div>
-            <SectionHelp text="Usually you pay zakat on the full amount in your 401k. But if you have no other cash and must pull from it to pay, we first subtract the penalty and taxes, then you pay zakat on what's left." />
+            <SectionHelp text={t('helpRetirement', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             <div className="card-field">
-              <label>Method</label>
+              <label>{t('methodLabel', lang)}</label>
               <div className="card-pill card-pill-retirement">
-                <button type="button" className={(formData.retirementMethod || 'full') === 'full' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'full' })}>Full balance</button>
-                <button type="button" className={formData.retirementMethod === 'method2' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'method2' })}>Per fund</button>
-                <button type="button" className={`card-pill-full ${formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1' ? 'active' : ''}`} onClick={() => updateFormWithReset({ retirementMethod: 'withdraw' })}>Must withdraw to pay</button>
+                <button type="button" className={(formData.retirementMethod || 'full') === 'full' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'full' })}>{t('retirementFullBalance', lang)}</button>
+                <button type="button" className={formData.retirementMethod === 'method2' ? 'active' : ''} onClick={() => updateFormWithReset({ retirementMethod: 'method2' })}>{t('retirementPerFund', lang)}</button>
+                <button type="button" className={`card-pill-full ${formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1' ? 'active' : ''}`} onClick={() => updateFormWithReset({ retirementMethod: 'withdraw' })}>{t('retirementMustWithdraw', lang)}</button>
               </div>
             </div>
             {(formData.retirementMethod || 'full') === 'full' ? (
-              <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} currency={currency} exchangeRates={exchangeRates} />
+              <InputRow label={t('retirementBalance', lang)} prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} currency={currency} exchangeRates={exchangeRates} />
             ) : (formData.retirementMethod === 'withdraw' || formData.retirementMethod === 'method1') ? (
               <>
-                <InputRow label="401(k) / IRA balance" prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} currency={currency} exchangeRates={exchangeRates} />
+                <InputRow label={t('retirementBalance', lang)} prefix="$" value={formData.retirementBalance} onChange={(v) => updateFormWithReset({ retirementBalance: v })} currency={currency} exchangeRates={exchangeRates} />
                 <div className="card-field">
-                  <label>How would you like to enter your income?</label>
+                  <label>{t('howEnterIncome', lang)}</label>
                   <div className="card-pill">
-                    <button type="button" className={formData.useTaxableIncome ? 'active' : ''} onClick={() => updateFormWithReset({ useTaxableIncome: true })}>Tax return (Line 15)</button>
-                    <button type="button" className={!formData.useTaxableIncome ? 'active' : ''} onClick={() => updateFormWithReset({ useTaxableIncome: false })}>Estimate gross</button>
+                    <button type="button" className={formData.useTaxableIncome ? 'active' : ''} onClick={() => updateFormWithReset({ useTaxableIncome: true })}>{t('taxReturn', lang)}</button>
+                    <button type="button" className={!formData.useTaxableIncome ? 'active' : ''} onClick={() => updateFormWithReset({ useTaxableIncome: false })}>{t('estimateGross', lang)}</button>
                   </div>
                 </div>
                 <div className="card-row">
                   <div className="card-field">
-                    <label>Filing status</label>
+                    <label>{t('filingStatus', lang)}</label>
                     <select value={formData.filingStatus} onChange={(e) => updateFormWithReset({ filingStatus: e.target.value })}>
                       <option>Single</option>
                       <option>Married Filing Jointly</option>
@@ -636,16 +664,16 @@ export default function App() {
                     </select>
                   </div>
                   <div className="card-field">
-                    <label>State</label>
+                    <label>{t('state', lang)}</label>
                     <select value={formData.stateName} onChange={(e) => updateFormWithReset({ stateName: e.target.value })}>
                       {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                 </div>
                 {formData.useTaxableIncome ? (
-                  <InputRow label="Taxable Income (Line 15)" prefix="$" value={formData.taxableIncome} onChange={(v) => updateFormWithReset({ taxableIncome: v })} currency={currency} exchangeRates={exchangeRates} />
+                  <InputRow label={t('taxableIncome', lang)} prefix="$" value={formData.taxableIncome} onChange={(v) => updateFormWithReset({ taxableIncome: v })} currency={currency} exchangeRates={exchangeRates} />
                 ) : (
-                  <InputRow label="Estimated gross annual income" prefix="$" value={formData.grossIncome} onChange={(v) => updateFormWithReset({ grossIncome: v })} currency={currency} exchangeRates={exchangeRates} />
+                  <InputRow label={t('grossIncome', lang)} prefix="$" value={formData.grossIncome} onChange={(v) => updateFormWithReset({ grossIncome: v })} currency={currency} exchangeRates={exchangeRates} />
                 )}
               </>
             ) : (
@@ -653,137 +681,137 @@ export default function App() {
                 {(formData.retirementFundsList || []).map((f, i) => (
                   <div key={f.id || i} className="card-sub">
                     <div className="card-sub-header">
-                      <span>Fund {i + 1}</span>
+                      <span>{t('fundLabel', lang)} {i + 1}</span>
                       <button type="button" className="card-remove" onClick={() => removeRetirementFund(i)} aria-label="Remove fund">×</button>
                     </div>
                     <div className="card-field">
-                      <label>Ticker</label>
+                      <label>{t('ticker', lang)}</label>
                       <TickerAutocomplete value={f.ticker} onChange={(v) => updateRetirementFund(i, { ticker: v })} placeholder="e.g. VOO" />
                     </div>
-                    <InputRow label="Balance" prefix="$" value={f.balance} onChange={(v) => updateRetirementFund(i, { balance: v })} currency={currency} exchangeRates={exchangeRates} />
-                    <InputRow label="Zakatable fraction (0–1)" value={f.zakatableFraction} onChange={(v) => updateRetirementFund(i, { zakatableFraction: parseFloat(v) || 0.3 })} placeholder="0.3" />
+                    <InputRow label={t('balance', lang)} prefix="$" value={f.balance} onChange={(v) => updateRetirementFund(i, { balance: v })} currency={currency} exchangeRates={exchangeRates} />
+                    <InputRow label={t('zakatableFraction', lang)} value={f.zakatableFraction} onChange={(v) => updateRetirementFund(i, { zakatableFraction: parseFloat(v) || 0.3 })} placeholder="0.3" />
                   </div>
                 ))}
-                <button type="button" className="add-more" onClick={addRetirementFund}>+ Add Fund / ETF</button>
+                <button type="button" className="add-more" onClick={addRetirementFund}>{t('addFund', lang)}</button>
               </>
             )}
           </div>
         </FormSection>
 
-        <FormSection title="Real Estate & Business" subtitle="Flipping properties, rental income, business assets, and money lent" defaultOpen={true}>
+        <FormSection title={t('sectionRealEstate', lang)} subtitle={t('sectionRealEstateSubtitle', lang)} defaultOpen={true}>
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Real Estate: Flipping</span>
+              <span>{t('realEstateFlipping', lang)}</span>
             </div>
-            <SectionHelp text="A house you bought to flip and sell? That's like inventory. We count its full market value and take 2.5%." />
+            <SectionHelp text={t('helpRealEstateFlipping', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             {(formData.realEstateFlippingList || []).map((p, i) => (
               <div key={p.id || i} className="card-sub">
                 <div className="card-sub-header">
-                  <span>{p.name || `Property ${i + 1}`}</span>
+                  <span>{p.name || `${t('propertyLabel', lang)} ${i + 1}`}</span>
                   <button type="button" className="card-remove" onClick={() => removeRealEstate(i)} aria-label="Remove">×</button>
                 </div>
-                <InputRow label="Property" type="text" value={p.name} onChange={(v) => updateRealEstate(i, { name: v })} placeholder="e.g. 123 Main St" />
-                <InputRow label="Market value" prefix="$" value={p.marketValue} onChange={(v) => updateRealEstate(i, { marketValue: v })} currency={currency} exchangeRates={exchangeRates} />
+                <InputRow label={t('propertyLabel', lang)} type="text" value={p.name} onChange={(v) => updateRealEstate(i, { name: v })} placeholder={t('placeholderProperty', lang)} />
+                <InputRow label={t('marketValue', lang)} prefix="$" value={p.marketValue} onChange={(v) => updateRealEstate(i, { marketValue: v })} currency={currency} exchangeRates={exchangeRates} />
               </div>
             ))}
-            <button type="button" className="add-more" onClick={addRealEstate}>+ Add Property</button>
+            <button type="button" className="add-more" onClick={addRealEstate}>{t('addProperty', lang)}</button>
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Real Estate: Rental Income</span>
+              <span>{t('rentalIncome', lang)}</span>
             </div>
-            <SectionHelp text="We don't count the building. We only count the rent money you've collected and haven't spent yet, minus any expenses you paid." />
+            <SectionHelp text={t('helpRentalIncome', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             {(formData.rentalList || []).map((r, i) => (
               <div key={r.id || i} className="card-sub">
                 <div className="card-sub-header">
                   <span>{r.name || `Rental ${i + 1}`}</span>
                   <button type="button" className="card-remove" onClick={() => removeRental(i)} aria-label="Remove">×</button>
                 </div>
-                <InputRow label="Property" type="text" value={r.name} onChange={(v) => updateRental(i, { name: v })} placeholder="e.g. Rental A" />
-                <InputRow label="Account balance" prefix="$" value={r.balance} onChange={(v) => updateRental(i, { balance: v })} currency={currency} exchangeRates={exchangeRates} />
+                <InputRow label={t('propertyLabel', lang)} type="text" value={r.name} onChange={(v) => updateRental(i, { name: v })} placeholder={t('placeholderRental', lang)} />
+                <InputRow label={t('accountBalance', lang)} prefix="$" value={r.balance} onChange={(v) => updateRental(i, { balance: v })} currency={currency} exchangeRates={exchangeRates} />
               </div>
             ))}
-            <button type="button" className="add-more" onClick={addRental}>+ Add Rental Property</button>
+            <button type="button" className="add-more" onClick={addRental}>{t('addRentalProperty', lang)}</button>
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Business Assets</span>
+              <span>{t('businessAssets', lang)}</span>
             </div>
-            <SectionHelp text="Add up: cash in the business, stuff you're selling, and money people owe you. Subtract what you owe. We don't count buildings or equipment, only things that move." />
+            <SectionHelp text={t('helpBusiness', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             <div className="card-field">
-              <label>Ownership</label>
+              <label>{t('ownership', lang)}</label>
               <div className="card-pill">
-                <button type="button" className={formData.businessSoleOwner ? 'active' : ''} onClick={() => updateFormWithReset({ businessSoleOwner: true })}>Sole Owner</button>
-                <button type="button" className={!formData.businessSoleOwner ? 'active' : ''} onClick={() => updateFormWithReset({ businessSoleOwner: false })}>Partial Owner</button>
+                <button type="button" className={formData.businessSoleOwner ? 'active' : ''} onClick={() => updateFormWithReset({ businessSoleOwner: true })}>{t('soleOwner', lang)}</button>
+                <button type="button" className={!formData.businessSoleOwner ? 'active' : ''} onClick={() => updateFormWithReset({ businessSoleOwner: false })}>{t('partialOwner', lang)}</button>
               </div>
             </div>
             {!formData.businessSoleOwner && (
-              <InputRow label="Ownership %" value={formData.businessOwnershipPct} onChange={(v) => updateFormWithReset({ businessOwnershipPct: v })} placeholder="e.g. 40" />
+              <InputRow label={t('ownershipPct', lang)} value={formData.businessOwnershipPct} onChange={(v) => updateFormWithReset({ businessOwnershipPct: v })} placeholder="e.g. 40" />
             )}
-            <InputRow label="Business cash" prefix="$" value={formData.businessCash} onChange={(v) => updateFormWithReset({ businessCash: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Inventory" prefix="$" value={formData.businessInventory} onChange={(v) => updateFormWithReset({ businessInventory: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Receivables" prefix="$" value={formData.businessReceivables} onChange={(v) => updateFormWithReset({ businessReceivables: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Business liabilities" prefix="$" value={formData.businessLiabilities} onChange={(v) => updateFormWithReset({ businessLiabilities: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('businessCash', lang)} prefix="$" value={formData.businessCash} onChange={(v) => updateFormWithReset({ businessCash: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('inventory', lang)} prefix="$" value={formData.businessInventory} onChange={(v) => updateFormWithReset({ businessInventory: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('receivables', lang)} prefix="$" value={formData.businessReceivables} onChange={(v) => updateFormWithReset({ businessReceivables: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('businessLiabilities', lang)} prefix="$" value={formData.businessLiabilities} onChange={(v) => updateFormWithReset({ businessLiabilities: v })} currency={currency} exchangeRates={exchangeRates} />
           </div>
 
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Money Lent to Others</span>
+              <span>{t('moneyLent', lang)}</span>
             </div>
-            <SectionHelp text="If someone owes you money and they know it and can pay it back, it still counts as yours. You pay zakat on it each year. If you're not sure they'll ever pay, don't count it until you actually get it." />
+            <SectionHelp text={t('helpMoneyLent', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
             {(formData.loansList || []).map((l, i) => (
               <div key={l.id || i} className="card-sub">
                 <div className="card-sub-header">
                   <span>{l.description || `Loan ${i + 1}`}</span>
                   <button type="button" className="card-remove" onClick={() => removeLoan(i)} aria-label="Remove">×</button>
                 </div>
-                <InputRow label="Description" type="text" value={l.description} onChange={(v) => updateLoan(i, { description: v })} placeholder="e.g. Loan to friend" />
-                <InputRow label="Amount" prefix="$" value={l.amount} onChange={(v) => updateLoan(i, { amount: v })} currency={currency} exchangeRates={exchangeRates} />
+                <InputRow label={t('description', lang)} type="text" value={l.description} onChange={(v) => updateLoan(i, { description: v })} placeholder={t('placeholderLoanDesc', lang)} />
+                <InputRow label={t('amount', lang)} prefix="$" value={l.amount} onChange={(v) => updateLoan(i, { amount: v })} currency={currency} exchangeRates={exchangeRates} />
                 <label className="card-check">
                   <input type="checkbox" checked={l.strong !== false} onChange={(e) => updateLoan(i, { strong: e.target.checked })} />
-                  Strong debt (zakatable)
+                  {t('strongDebt', lang)}
                 </label>
               </div>
             ))}
-            <button type="button" className="add-more" onClick={addLoan}>+ Add Loan</button>
+            <button type="button" className="add-more" onClick={addLoan}>{t('addLoan', lang)}</button>
           </div>
         </FormSection>
 
-        <FormSection title="Deductions" subtitle="Personal debts currently due, deducted from your zakatable total" defaultOpen={true}>
+        <FormSection title={t('sectionDeductions', lang)} subtitle={t('sectionDeductionsSubtitle', lang)} defaultOpen={true}>
           <div className="form-subsection">
             <div className="form-subsection-header">
-              <span>Personal Liabilities</span>
+              <span>{t('personalLiabilities', lang)}</span>
             </div>
-            <SectionHelp text="We subtract debts you have to pay soon. For your mortgage, we only count the next one payment, not the whole loan." />
-            <InputRow label="Credit card balances" prefix="$" value={formData.creditCard} onChange={(v) => updateFormWithReset({ creditCard: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Mortgage (next principal payment)" prefix="$" value={formData.mortgageNextPrincipal} onChange={(v) => updateFormWithReset({ mortgageNextPrincipal: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Personal loans due this year" prefix="$" value={formData.personalLoans} onChange={(v) => updateFormWithReset({ personalLoans: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Money owed to family or friends" prefix="$" value={formData.moneyOwed} onChange={(v) => updateFormWithReset({ moneyOwed: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Unpaid taxes & bills" prefix="$" value={formData.unpaidTaxesBills} onChange={(v) => updateFormWithReset({ unpaidTaxesBills: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Unpaid zakat from previous years" prefix="$" value={formData.unpaidZakatPrior} onChange={(v) => updateFormWithReset({ unpaidZakatPrior: v })} currency={currency} exchangeRates={exchangeRates} />
-            <InputRow label="Other liabilities" prefix="$" value={formData.otherLiabilities} onChange={(v) => updateFormWithReset({ otherLiabilities: v })} currency={currency} exchangeRates={exchangeRates} />
+            <SectionHelp text={t('helpLiabilities', lang)} hideLabel={t('hide', lang)} showLabel={t('showExplanation', lang)} />
+            <InputRow label={t('creditCard', lang)} prefix="$" value={formData.creditCard} onChange={(v) => updateFormWithReset({ creditCard: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('mortgageNextPrincipal', lang)} prefix="$" value={formData.mortgageNextPrincipal} onChange={(v) => updateFormWithReset({ mortgageNextPrincipal: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('personalLoans', lang)} prefix="$" value={formData.personalLoans} onChange={(v) => updateFormWithReset({ personalLoans: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('moneyOwed', lang)} prefix="$" value={formData.moneyOwed} onChange={(v) => updateFormWithReset({ moneyOwed: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('unpaidTaxes', lang)} prefix="$" value={formData.unpaidTaxesBills} onChange={(v) => updateFormWithReset({ unpaidTaxesBills: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('unpaidZakat', lang)} prefix="$" value={formData.unpaidZakatPrior} onChange={(v) => updateFormWithReset({ unpaidZakatPrior: v })} currency={currency} exchangeRates={exchangeRates} />
+            <InputRow label={t('otherLiabilities', lang)} prefix="$" value={formData.otherLiabilities} onChange={(v) => updateFormWithReset({ otherLiabilities: v })} currency={currency} exchangeRates={exchangeRates} />
           </div>
         </FormSection>
       </div>
 
       <section className="donations-section">
         <div className="donations-header">
-          <h2 className="donations-title">Where to Give</h2>
+          <h2 className="donations-title">{t('whereToGive', lang)}</h2>
         </div>
-        <p className="donations-intro">Organizations that accept zakat for distribution to eligible recipients.</p>
+        <p className="donations-intro">{t('donationsIntro', lang)}</p>
 
-        <div className="donations-section-label">Support FIKR</div>
+        <div className="donations-section-label">{t('supportFikr', lang)}</div>
         <a href="https://www.zeffy.com/en-US/donation-form/contribute-your-zakah-in-impactful-avenues" className="donations-card donations-card-fikr">
           <div>
-            <div className="donations-card-title">Donate Zakat to FIKR</div>
-            <div className="donations-card-desc">100% goes to eligible needy students</div>
+            <div className="donations-card-title">{t('donateFikr', lang)}</div>
+            <div className="donations-card-desc">{t('donateFikrDesc', lang)}</div>
           </div>
           <span className="donations-card-arrow" aria-hidden>→</span>
         </a>
 
-        <div className="donations-section-label">Other reputable organizations that collect zakat, run under the supervision of competent &apos;ulama</div>
+        <div className="donations-section-label">{t('otherOrgs', lang)}</div>
         <div className="donations-cards">
           <a href="https://www.thirdpillar.us/" className="donations-card">
             <div>
@@ -843,18 +871,18 @@ export default function App() {
           </a>
         </div>
 
-        <p className="donations-disclaimer">We are not affiliated with these organizations. Links are provided as a community service.</p>
+        <p className="donations-disclaimer">{t('donationsDisclaimer', lang)}</p>
       </section>
 
       <footer className="dashboard-footer">
-        <p>Zakat guide by <a href="https://fikr.us">Foundation for Inquiry, Knowledge and Revival</a></p>
+        <p>{t('footerText', lang)} <a href="https://fikr.us">Foundation for Inquiry, Knowledge and Revival</a></p>
       </footer>
       </div>
     </div>
   )
 }
 
-function CryptoFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
+function CryptoFormRow({ entry, onUpdate, onRemove, currency, exchangeRates, lang = 'en' }) {
   const [refreshing, setRefreshing] = useState(false)
   const isTrading = entry.isTrading !== false
   const curr = exchangeRates && exchangeRates[currency] ? currency : 'USD'
@@ -875,18 +903,18 @@ function CryptoFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
   return (
     <div className="card-sub">
       <div className="card-sub-header">
-        <span>{entry.entryLabel || entry.name || 'Select coin'}</span>
+        <span>{entry.entryLabel || entry.name || t('selectCoin', lang)}</span>
         <button type="button" className="card-remove" onClick={onRemove} aria-label="Remove">×</button>
       </div>
       <div className="card-field">
-        <label>Holding type</label>
+        <label>{t('holdingType', lang)}</label>
         <div className="card-pill">
-          <button type="button" className={isTrading ? 'active' : ''} onClick={() => onUpdate({ isTrading: true })}>Trading</button>
-          <button type="button" className={!isTrading ? 'active' : ''} onClick={() => onUpdate({ isTrading: false })}>Long-term</button>
+          <button type="button" className={isTrading ? 'active' : ''} onClick={() => onUpdate({ isTrading: true })}>{t('holdingTrading', lang)}</button>
+          <button type="button" className={!isTrading ? 'active' : ''} onClick={() => onUpdate({ isTrading: false })}>{t('holdingLongTerm', lang)}</button>
         </div>
       </div>
       <div className="card-field">
-        <label>Coin</label>
+        <label>{t('coinLabel', lang)}</label>
         <CryptoAutocomplete
           value={entry.name}
           onChange={(v) => onUpdate({ name: v })}
@@ -898,13 +926,13 @@ function CryptoFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
         />
       </div>
       <div className="card-row">
-        <InputRow label="Amount held" value={entry.amount} onChange={(v) => onUpdate({ amount: v })} placeholder="e.g. 0.5" />
+        <InputRow label={t('amountHeld', lang)} value={entry.amount} onChange={(v) => onUpdate({ amount: v })} placeholder="e.g. 0.5" />
         <div className="card-field">
-          <label>Price per coin</label>
+          <label>{t('pricePerCoin', lang)}</label>
           <div className="input-with-refresh">
             <div className="input-wrap">
               <span className="prefix">{getCurrencySymbol(curr)}</span>
-              <input type="number" className="input has-prefix" value={entry.price ?? ''} onChange={(e) => onUpdate({ price: e.target.value })} placeholder="Auto-filled" min="0" step="0.01" inputMode="decimal" />
+              <input type="number" className="input has-prefix" value={entry.price ?? ''} onChange={(e) => onUpdate({ price: e.target.value })} placeholder={t('autoFilled', lang)} min="0" step="0.01" inputMode="decimal" />
             </div>
             <button type="button" className="btn-refresh" onClick={handleRefresh} disabled={!entry.coinId || refreshing} title="Refresh price">
               {refreshing ? '…' : '↻'}
@@ -912,12 +940,12 @@ function CryptoFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
           </div>
         </div>
       </div>
-      <InputRow label="Or enter total value" prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="If not using amount × price" currency={currency} exchangeRates={exchangeRates} />
+      <InputRow label={t('orEnterTotalValue', lang)} prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="If not using amount × price" currency={currency} exchangeRates={exchangeRates} />
     </div>
   )
 }
 
-function StocksLongFormRow({ entry, onUpdate, onRemove, currency, exchangeRates }) {
+function StocksLongFormRow({ entry, onUpdate, onRemove, currency, exchangeRates, lang = 'en' }) {
   const mode = entry.stocksInputMode || 'per_share'
   return (
     <div className="card-sub">
@@ -926,25 +954,25 @@ function StocksLongFormRow({ entry, onUpdate, onRemove, currency, exchangeRates 
         <button type="button" className="card-remove" onClick={onRemove} aria-label="Remove">×</button>
       </div>
       <div className="card-field">
-        <label>Ticker</label>
+        <label>{t('ticker', lang)}</label>
         <TickerAutocomplete value={entry.ticker} onChange={(v) => onUpdate({ ticker: v, ...(v?.trim() && { entryLabel: v.trim().toUpperCase() }) })} placeholder="e.g. AAPL" />
       </div>
       <div className="card-field">
-        <label>Input method</label>
+        <label>{t('inputMethod', lang)}</label>
         <div className="card-pill">
-          <button type="button" className={mode === 'per_share' ? 'active' : ''} onClick={() => onUpdate({ stocksInputMode: 'per_share' })}>Per share</button>
-          <button type="button" className={mode === 'total' ? 'active' : ''} onClick={() => onUpdate({ stocksInputMode: 'total' })}>Total value</button>
+          <button type="button" className={mode === 'per_share' ? 'active' : ''} onClick={() => onUpdate({ stocksInputMode: 'per_share' })}>{t('perShare', lang)}</button>
+          <button type="button" className={mode === 'total' ? 'active' : ''} onClick={() => onUpdate({ stocksInputMode: 'total' })}>{t('totalValue', lang)}</button>
         </div>
       </div>
       {mode === 'per_share' ? (
         <div className="card-row">
-          <InputRow label="Shares" value={entry.shares} onChange={(v) => onUpdate({ shares: v })} placeholder="e.g. 100" />
-          <InputRow label="Price/share" prefix="$" value={entry.pricePerShare} onChange={(v) => onUpdate({ pricePerShare: v })} placeholder="e.g. 150.00" currency={currency} exchangeRates={exchangeRates} />
+          <InputRow label={t('shares', lang)} value={entry.shares} onChange={(v) => onUpdate({ shares: v })} placeholder="e.g. 100" />
+          <InputRow label={t('pricePerShare', lang)} prefix="$" value={entry.pricePerShare} onChange={(v) => onUpdate({ pricePerShare: v })} placeholder="e.g. 150.00" currency={currency} exchangeRates={exchangeRates} />
         </div>
       ) : (
-        <InputRow label="Total market value" prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="e.g. 15000.00" currency={currency} exchangeRates={exchangeRates} />
+        <InputRow label={t('totalMarketValue', lang)} prefix="$" value={entry.value} onChange={(v) => onUpdate({ value: v })} placeholder="e.g. 15000.00" currency={currency} exchangeRates={exchangeRates} />
       )}
-      <InputRow label="Zakatable fraction (0–1)" value={entry.zakatableFraction} onChange={(v) => onUpdate({ zakatableFraction: parseFloat(v) || 0.3 })} placeholder="0.3" />
+      <InputRow label={t('zakatableFraction', lang)} value={entry.zakatableFraction} onChange={(v) => onUpdate({ zakatableFraction: parseFloat(v) || 0.3 })} placeholder="0.3" />
     </div>
   )
 }
